@@ -1,0 +1,48 @@
+/* Import modern typography from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-body bg-slate-50 text-slate-700 dark:bg-dark-bg dark:text-slate-200 transition-colors duration-200 antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold text-slate-900 dark:text-white;
+  }
+}
+
+/* Notion / Airtable styled layout classes */
+.card-hover {
+  @apply hover:translate-y-[-2px] hover:shadow-md transition-all duration-200;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-md text-sm outline-none focus:border-primary transition-all font-body text-slate-950 dark:text-white;
+}
+
+.btn-primary {
+  @apply px-4 py-2 bg-primary text-white text-sm font-semibold rounded-md hover:bg-primary-dark shadow-sm hover:shadow active:scale-95 transition-all inline-flex items-center justify-center gap-2;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white dark:bg-dark-surface text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-md border border-slate-200 dark:border-dark-border hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all inline-flex items-center justify-center gap-2;
+}
+
+/* Custom Scrollbar for Notion/Airtable Grid appearance */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300 dark:bg-slate-700;
+}
