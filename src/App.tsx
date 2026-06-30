@@ -10,6 +10,7 @@ import { CounsellingModule } from './components/CounsellingModule';
 import { MonitoringModule } from './components/MonitoringModule';
 import { ReportsModule } from './components/ReportsModule';
 import { UserManager } from './components/UserManager';
+import { LessonPlanModule } from './components/LessonPlanModule';
 import { AIAssistant } from './components/AIAssistant';
 import { Sparkles, HelpCircle, Bell, Wifi, WifiOff } from 'lucide-react';
 
@@ -76,6 +77,8 @@ export const App: React.FC = () => {
         return <ReportsModule />;
       case 'users':
         return <UserManager />;
+      case 'lesson_plans':
+        return <LessonPlanModule />;
       default:
         return (
           <div className="py-12 text-center text-xs text-slate-500 bg-white border rounded">

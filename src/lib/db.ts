@@ -728,6 +728,19 @@ class OmpDatabase {
     return this.getTable<LessonPlan>('omp_lesson_plans');
   }
 
+  public saveLessonPlan(plan: LessonPlan) {
+    const plans = this.getLessonPlans();
+    const index = plans.findIndex(p => p.id === plan.id);
+    if (index >= 0) {
+      plans[index] = plan;
+      this.queueSyncItem('omp_lesson_plans', 'update', plan);
+    } else {
+      plans.push(plan);
+      this.queueSyncItem('omp_lesson_plans', 'insert', plan);
+    }
+    this.saveTable('omp_lesson_plans', plans);
+  }
+
   // Inventory
   public getInventory(): InventoryItem[] {
     return this.getTable<InventoryItem>('omp_inventory');
