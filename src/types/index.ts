@@ -34,6 +34,7 @@ export interface User {
   assignedDistricts: string[];
   permissions: string[]; // Granular permission strings
   isActive: boolean;
+  password?: string;
   lastLogin?: string;
   activityLogs: ActivityLog[];
 }

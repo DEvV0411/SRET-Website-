@@ -39,6 +39,10 @@ export const UserManager: React.FC = () => {
   const [prog, setProg] = useState<ProgrammeName | 'All'>('All');
   const [schoolsStr, setSchoolsStr] = useState('');
   const [districtsStr, setDistrictsStr] = useState('');
+  
+  // Custom password states
+  const [userPassword, setUserPassword] = useState('');
+  const [newPasswordVal, setNewPasswordVal] = useState('');
 
   // Permission choices
   const ALL_PERMISSIONS = [
@@ -87,6 +91,7 @@ export const UserManager: React.FC = () => {
       assignedDistricts: districtsStr.split(',').map(d => d.trim()).filter(Boolean),
       permissions: defaultPermissions,
       isActive: true,
+      password: userPassword.trim() || 'password123',
       activityLogs: [
         { id: 'log_' + Math.floor(100+Math.random()*900), timestamp: new Date().toISOString(), action: 'Account Created', details: `Super Admin created profile for ${name}` }
       ]
@@ -99,6 +104,7 @@ export const UserManager: React.FC = () => {
     // Reset
     setUsername('');
     setName('');
+    setUserPassword('');
     setRole('trainer');
     setProg('All');
     setSchoolsStr('');
@@ -231,14 +237,39 @@ export const UserManager: React.FC = () => {
                 </button>
               </div>
 
-              {/* Password simulation info */}
-              <div className="p-3 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs leading-relaxed text-slate-500">
-                <div className="flex items-center gap-2 mb-1.5 font-bold text-slate-700 dark:text-slate-300">
+              {/* Password configuration panel */}
+              <div className="p-3 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs leading-relaxed text-slate-500 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-350">
                   <KeyRound size={14} className="text-primary" />
                   <span>Security Credentials</span>
                 </div>
-                <span>Initial login pass: <span className="font-mono text-slate-900 dark:text-white font-bold select-all">password123</span></span>
-                <span className="block mt-1">Force Password Reset flag can be managed via Cloud auth.</span>
+                <div>
+                  <span>Current Pass: <span className="font-mono text-slate-900 dark:text-white font-bold select-all">{selectedUser.password || 'password123'}</span></span>
+                </div>
+                <div className="flex gap-1.5 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Set custom password"
+                    value={newPasswordVal}
+                    onChange={(e) => setNewPasswordVal(e.target.value)}
+                    className="flex-1 px-2 py-1 bg-white dark:bg-dark-surface border border-slate-205 dark:border-dark-border rounded text-[11px] outline-none text-slate-900 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newPasswordVal.trim()) return;
+                      const updatedUser = { ...selectedUser, password: newPasswordVal.trim() };
+                      db.saveUser(updatedUser);
+                      setSelectedUser(updatedUser);
+                      setNewPasswordVal('');
+                      loadUsers();
+                      window.dispatchEvent(new CustomEvent('omp_toast_message', { detail: `Password updated for @${selectedUser.username}` }));
+                    }}
+                    className="px-2.5 py-1 bg-primary text-white text-[10px] font-bold rounded hover:bg-primary-dark shadow"
+                  >
+                    Reset
+                  </button>
+                </div>
               </div>
 
               {/* Granular Permission Checklist */}
@@ -363,6 +394,19 @@ export const UserManager: React.FC = () => {
                   placeholder="e.g. John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  className="input-field"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Account Password *</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter login password"
+                  value={userPassword}
+                  onChange={(e) => setUserPassword(e.target.value)}
                   className="input-field"
                 />
               </div>

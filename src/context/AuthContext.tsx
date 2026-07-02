@@ -128,79 +128,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (username: string, password: string, rememberMe: boolean): Promise<boolean> => {
     const cleanUsername = username.trim().toLowerCase();
+    const email = `${cleanUsername}@omp.org`;
 
     if (isFirebaseConfigured && auth && firestoreDb) {
-      const email = `${cleanUsername}@omp.org`;
       try {
-        // Try authenticating in Firebase Auth
-        await signInWithEmailAndPassword(auth, email, password);
-
-        // Retrieve Firestore metadata doc
         const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
-        let userProfile: User;
+        let userProfile: User | null = null;
 
         if (userDoc.exists()) {
           userProfile = userDoc.data() as User;
         } else {
-          const seedUser = db.getUsers().find(u => u.username === cleanUsername);
-          userProfile = seedUser || {
-            username: cleanUsername,
-            name: cleanUsername.replace(/\./g, ' '),
-            role: 'trainer',
-            assignedProgramme: 'All',
-            assignedSchools: [],
-            assignedDistricts: ['All'],
-            isActive: true,
-            permissions: ['View Students', 'View Attendance'],
-            activityLogs: []
-          };
-          await setDoc(doc(firestoreDb, 'users', cleanUsername), userProfile);
+          userProfile = db.getUsers().find(u => u.username === cleanUsername) || null;
         }
 
-        const updatedUser = {
-          ...userProfile,
-          lastLogin: new Date().toISOString()
-        };
-
-        setCurrentUser(updatedUser);
-        if (rememberMe) {
-          localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
-        }
-        return true;
-      } catch (authError: any) {
-        console.warn('[Firebase Auth] Authentication failed. Checking auto-registration...', authError.code);
-
-        // Auto signup seeded demo profiles
-        if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/cannot-find-user') {
-          const seedUser = db.getUsers().find(u => u.username === cleanUsername);
-          if (seedUser && password === 'password123') {
+        if (userProfile) {
+          const targetPassword = userProfile.password || 'password123';
+          
+          if (password === targetPassword) {
             try {
-              console.log('[Firebase Auth] Creating demo account credentials:', email);
-              await createUserWithEmailAndPassword(auth, email, 'password123');
-
-              const updatedUser = {
-                ...seedUser,
-                lastLogin: new Date().toISOString()
-              };
-
-              await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
-              setCurrentUser(updatedUser);
-
-              if (rememberMe) {
-                localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+              await signInWithEmailAndPassword(auth, email, password);
+            } catch (authError: any) {
+              if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/cannot-find-user') {
+                try {
+                  console.log('[Firebase Auth] Auto-registering user credentials:', email);
+                  await createUserWithEmailAndPassword(auth, email, password);
+                } catch (regErr) {
+                  console.error('[Firebase Auth] Auto-registration failed:', regErr);
+                }
               }
-              return true;
-            } catch (regErr) {
-              console.error('[Firebase Auth] Demo registration failed:', regErr);
             }
+
+            const updatedUser = {
+              ...userProfile,
+              lastLogin: new Date().toISOString()
+            };
+
+            await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
+            setCurrentUser(updatedUser);
+            if (rememberMe) {
+              localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+            }
+            return true;
           }
+        }
+        return false;
+      } catch (err) {
+        console.warn('[Firebase Auth] Firestore bypass failed, signing in directly:', err);
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
+          if (userDoc.exists()) {
+            const userProfile = userDoc.data() as User;
+            setCurrentUser(userProfile);
+            return true;
+          }
+        } catch (directErr) {
+          console.error('[Firebase Auth] Direct sign-in failed:', directErr);
         }
         return false;
       }
     } else {
       // Local database fallback
       const user = db.getUsers().find(u => u.username === cleanUsername);
-      if (user && user.isActive && password === 'password123') {
+      const targetPassword = user?.password || 'password123';
+      if (user && user.isActive && password === targetPassword) {
         const updatedUser = {
           ...user,
           lastLogin: new Date().toISOString()
