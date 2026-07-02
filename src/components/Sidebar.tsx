@@ -30,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'schools', icon: School, label: 'Schools', permission: 'View Students' },
     { id: 'sessions', icon: Calendar, label: 'Sessions', permission: 'View Students' },
     { id: 'lesson_plans', icon: BookOpen, label: 'Lesson Plans', permission: 'View Students' },
+    { id: 'pre_vocational', icon: BookOpen, label: 'Pre Vocational' },
     { id: 'inventory', icon: Package, label: 'Inventory', permission: 'Manage Inventory' },
     { id: 'transport', icon: Truck, label: 'Transport', permission: 'Manage Fleet' },
     { id: 'counselling', icon: HeartHandshake, label: 'Counselling', role: 'counsellor' }, // Custom role block

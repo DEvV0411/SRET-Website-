@@ -32,6 +32,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab, setS
   const [upcomingSessions, setUpcomingSessions] = useState<Session[]>([]);
   const [pendingTasks, setPendingTasks] = useState<SystemAlert[]>([]);
   const [programmePerformance, setProgrammePerformance] = useState<{name: string, value: number}[]>([]);
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setRefreshCount(prev => prev + 1);
+    };
+    window.addEventListener('omp_session_conducted_update', handleUpdate);
+    window.addEventListener('omp_alerts_change', handleUpdate);
+    return () => {
+      window.removeEventListener('omp_session_conducted_update', handleUpdate);
+      window.removeEventListener('omp_alerts_change', handleUpdate);
+    };
+  }, []);
   
   // Interactive checklist widget state
   const [tasks, setTasks] = useState([
@@ -100,7 +113,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab, setS
     const activeStudents = rawStudents.filter(s => s.alumniStatus === 'Active').length;
     const totalSchools = rawSchools.length;
     
-    const sessionsConducted = rawSessions.filter(s => s.status === 'Completed').length;
+    const sessionsConducted = rawSessions.filter(s => s.status === 'Conducted' || s.status === 'Verified' || s.status === 'Completed').length;
     const sessionsMissed = rawSessions.filter(s => s.status === 'Missed').length;
     
     // Attendance Avg calculation
@@ -142,12 +155,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab, setS
     // 4. Comparative Programme metrics
     const progs: ProgrammeName[] = ['Vocational', 'Pre-Vocational', 'Udyam', 'Magic Touch'];
     const perf = progs.map(p => {
-      const conducted = db.getSessions().filter(s => s.programme === p && s.status === 'Completed').length;
+      const conducted = db.getSessions().filter(s => s.programme === p && (s.status === 'Conducted' || s.status === 'Verified' || s.status === 'Completed')).length;
       return { name: p, value: conducted };
     });
     setProgrammePerformance(perf);
 
-  }, [selectedProg, currentUser]);
+  }, [selectedProg, currentUser, refreshCount]);
 
   const handleStartSession = (sessionId: string) => {
     if (setSelectedSessionId) {

@@ -18,6 +18,8 @@ export type ProgrammeName =
 
 export type SessionStatus = 
   | 'Scheduled'
+  | 'Conducted'
+  | 'Verified'
   | 'Completed'
   | 'Cancelled'
   | 'Missed'
@@ -41,6 +43,9 @@ export interface ActivityLog {
   timestamp: string;
   action: string;
   details: string;
+  username?: string;
+  previousValue?: string;
+  newValue?: string;
 }
 
 export interface Student {
@@ -111,6 +116,28 @@ export interface Session {
   remarks?: string;
   documents?: string[];
   locationCoords?: { lat: number; lng: number };
+  
+  // Pre Vocational Workflow Extensions
+  conductedAt?: string;
+  conductedBy?: string;
+  verifiedAt?: string;
+  verifiedBy?: string;
+  completedAt?: string;
+  completedBy?: string;
+  studentsPresentCount?: number;
+  issuesFaced?: string;
+  groupName?: string;
+}
+
+export interface TimetableEntry {
+  id: string;
+  group: string;
+  teacherName: string;
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+  schoolName: string;
+  schoolCode?: string;
+  district?: string;
+  taluka?: string;
 }
 
 export interface LessonPlan {
@@ -182,7 +209,7 @@ export interface MonitoringVisit {
 
 export interface SystemAlert {
   id: string;
-  type: 'attendance_missing' | 'session_unconfirmed' | 'consecutive_misses' | 'low_stock' | 'reports_overdue' | 'baseline_pending';
+  type: 'attendance_missing' | 'session_unconfirmed' | 'consecutive_misses' | 'low_stock' | 'reports_overdue' | 'baseline_pending' | 'class_conducted' | 'class_missed' | 'remarks_uploaded' | 'timetable_changed';
   severity: 'low' | 'medium' | 'high';
   message: string;
   programme?: ProgrammeName;

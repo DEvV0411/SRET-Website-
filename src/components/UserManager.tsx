@@ -44,7 +44,8 @@ export const UserManager: React.FC = () => {
   const ALL_PERMISSIONS = [
     'View Students', 'Add Students', 'Edit Students', 'Delete Students',
     'View Attendance', 'Mark Attendance', 'View Reports', 'Export Reports',
-    'Manage Inventory', 'Manage Users', 'Manage Fleet', 'View Financials', 'AI Insight Access'
+    'Manage Inventory', 'Manage Users', 'Manage Fleet', 'View Financials', 'AI Insight Access',
+    'View Pre Vocational', 'Add Pre Vocational', 'Edit Pre Vocational', 'Delete Pre Vocational', 'Export Pre Vocational'
   ];
 
   useEffect(() => {

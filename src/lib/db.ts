@@ -1,7 +1,7 @@
 import { 
   User, Student, School, Session, LessonPlan, 
   CounsellingRecord, InventoryItem, TransportRoute, 
-  MonitoringVisit, SystemAlert, SyncItem 
+  MonitoringVisit, SystemAlert, SyncItem, TimetableEntry, ActivityLog 
 } from '../types';
 import { firestoreDb, isFirebaseConfigured } from './firebase';
 import { doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
@@ -160,7 +160,82 @@ const SEED_SCHOOLS: School[] = [
     runningProgrammes: ['Vocational', 'Magic Touch'],
     sessionsTarget: 25,
     sessionsConducted: 20
-  }
+  },
+
+  // PRE-VOCATIONAL ECO SCHOOLS (71 new Dharampur cluster schools)
+  { code: 'S_PV_1', name: 'Khanda Primary school', principalName: 'Shri A. Patel', principalContact: '+91 99000 11101', village: 'Khanda', taluka: 'Dharampur', district: 'Valsad', studentStrength: 95, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_2', name: 'Sawarmal Primary school', principalName: 'Shri B. Desai', principalContact: '+91 99000 11102', village: 'Sawarmal', taluka: 'Dharampur', district: 'Valsad', studentStrength: 110, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_3', name: 'Kangvi Primary school', principalName: 'Shri C. Naik', principalContact: '+91 99000 11103', village: 'Kangvi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 85, sessionsTarget: 20, sessionsConducted: 10, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_4', name: 'Karanjveri Patel faliya', principalName: 'Shri D. Chaudhari', principalContact: '+91 99000 11104', village: 'Karanjveri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 75, sessionsTarget: 20, sessionsConducted: 8, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_5', name: 'Navinagri Primary', principalName: 'Shri E. Gamit', principalContact: '+91 99000 11105', village: 'Navinagri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 90, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_6', name: 'Malanpada Primary school, Dasherapati', principalName: 'Shri F. Rathod', principalContact: '+91 99000 11106', village: 'Malanpada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 120, sessionsTarget: 20, sessionsConducted: 13, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_7', name: 'Baroliya Mukhya shala', principalName: 'Shri G. Vasava', principalContact: '+91 99000 11107', village: 'Baroliya', taluka: 'Dharampur', district: 'Valsad', studentStrength: 100, sessionsTarget: 20, sessionsConducted: 15, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_8', name: 'Ozarpada Primary school', principalName: 'Shri H. Solanki', principalContact: '+91 99000 11108', village: 'Ozarpada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 105, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_9', name: 'Nilparn Ashram shala Khanda', principalName: 'Shri I. Chauhan', principalContact: '+91 99000 11109', village: 'Khanda', taluka: 'Dharampur', district: 'Valsad', studentStrength: 130, sessionsTarget: 20, sessionsConducted: 16, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_10', name: 'Bhavada Primary school', principalName: 'Shri J. Jadeja', principalContact: '+91 99000 11110', village: 'Bhavada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 80, sessionsTarget: 20, sessionsConducted: 9, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_11', name: 'SRVV Tamchhadi', principalName: 'Shri K. Parmar', principalContact: '+91 99000 11111', village: 'Tamchhadi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 140, sessionsTarget: 20, sessionsConducted: 18, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_12', name: 'Tamchhadi Primary school', principalName: 'Shri L. Vaghela', principalContact: '+91 99000 11112', village: 'Tamchhadi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 115, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_13', name: 'Besfaliya bilpudi Primary school', principalName: 'Shri M. Mewada', principalContact: '+91 99000 11113', village: 'Bilpudi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 92, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_14', name: 'Primary school Dungarpada', principalName: 'Shri N. Dodiya', principalContact: '+91 99000 11114', village: 'Dungarpada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 88, sessionsTarget: 20, sessionsConducted: 10, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_15', name: 'Vidyamandir sherimal', principalName: 'Shri O. Joshi', principalContact: '+91 99000 11115', village: 'Sherimal', taluka: 'Dharampur', district: 'Valsad', studentStrength: 150, sessionsTarget: 20, sessionsConducted: 17, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_16', name: 'Kanya Ashram Shala Tanki', principalName: 'Shri P. Rawal', principalContact: '+91 99000 11116', village: 'Tanki', taluka: 'Dharampur', district: 'Valsad', studentStrength: 160, sessionsTarget: 20, sessionsConducted: 19, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_17', name: 'Kharvel Primary school', principalName: 'Shri Q. Dave', principalContact: '+91 99000 11117', village: 'Kharvel', taluka: 'Dharampur', district: 'Valsad', studentStrength: 100, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_18', name: 'Patel faliya Baroliya', principalName: 'Shri R. Trivedi', principalContact: '+91 99000 11118', village: 'Baroliya', taluka: 'Dharampur', district: 'Valsad', studentStrength: 82, sessionsTarget: 20, sessionsConducted: 9, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_19', name: 'Bamti Primary school', principalName: 'Shri S. Vyas', principalContact: '+91 99000 11119', village: 'Bamti', taluka: 'Dharampur', district: 'Valsad', studentStrength: 108, sessionsTarget: 20, sessionsConducted: 13, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_20', name: 'Kelavni Kendra shala', principalName: 'Shri T. Pandya', principalContact: '+91 99000 11120', village: 'Kelavni', taluka: 'Dharampur', district: 'Valsad', studentStrength: 125, sessionsTarget: 20, sessionsConducted: 15, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_21', name: 'Ashram Shala Tamchhadi', principalName: 'Shri U. Bhatt', principalContact: '+91 99000 11121', village: 'Tamchhadi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 135, sessionsTarget: 20, sessionsConducted: 16, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_22', name: 'Patel faliya Prathmik Shala Kelavni', principalName: 'Shri V. Pathak', principalContact: '+91 99000 11122', village: 'Kelavni', taluka: 'Dharampur', district: 'Valsad', studentStrength: 98, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_23', name: 'Barumal primary school', principalName: 'Shri W. Dwivedi', principalContact: '+91 99000 11123', village: 'Barumal', taluka: 'Dharampur', district: 'Valsad', studentStrength: 112, sessionsTarget: 20, sessionsConducted: 13, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_24', name: 'Kanurbarda Primary school', principalName: 'Shri X. Shastri', principalContact: '+91 99000 11124', village: 'Kanurbarda', taluka: 'Dharampur', district: 'Valsad', studentStrength: 86, sessionsTarget: 20, sessionsConducted: 10, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_25', name: 'Avdha Primary school (2)', principalName: 'Shri Y. Upadhyay', principalContact: '+91 99000 11125', village: 'Avdha', taluka: 'Dharampur', district: 'Valsad', studentStrength: 102, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_26', name: 'Ghogharpati Primary school', principalName: 'Shri Z. Shukla', principalContact: '+91 99000 11126', village: 'Ghogharpati', taluka: 'Dharampur', district: 'Valsad', studentStrength: 90, sessionsTarget: 20, sessionsConducted: 10, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_27', name: 'Ranpada Primary school', principalName: 'Shri A. Ray', principalContact: '+91 99000 11127', village: 'Ranpada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 118, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_28', name: 'Rajmahal road Primary school (2)', principalName: 'Shri B. Sen', principalContact: '+91 99000 11128', village: 'Rajmahal', taluka: 'Dharampur', district: 'Valsad', studentStrength: 130, sessionsTarget: 20, sessionsConducted: 15, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_29', name: 'Sidumbar Primary school (2)', principalName: 'Shri C. Das', principalContact: '+91 99000 11129', village: 'Sidumbar', taluka: 'Dharampur', district: 'Valsad', studentStrength: 124, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_30', name: 'Asura primary school', principalName: 'Shri D. Roy', principalContact: '+91 99000 11130', village: 'Asura', taluka: 'Dharampur', district: 'Valsad', studentStrength: 105, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_31', name: 'Kunkan faliya Primary school (Poonam)', principalName: 'Shri E. Pal', principalContact: '+91 99000 11131', village: 'Kunkan', taluka: 'Dharampur', district: 'Valsad', studentStrength: 84, sessionsTarget: 20, sessionsConducted: 9, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_32', name: 'chondha Primary school', principalName: 'Shri F. Dutt', principalContact: '+91 99000 11132', village: 'Chondha', taluka: 'Dharampur', district: 'Valsad', studentStrength: 96, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_33', name: 'Luheri Primary school', principalName: 'Shri G. Bose', principalContact: '+91 99000 11133', village: 'Luheri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 112, sessionsTarget: 20, sessionsConducted: 13, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_34', name: 'Ananad ashram Shala chondha', principalName: 'Shri H. Ghose', principalContact: '+91 99000 11134', village: 'Chondha', taluka: 'Dharampur', district: 'Valsad', studentStrength: 142, sessionsTarget: 20, sessionsConducted: 17, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_35', name: 'Jagiri faliya Primary school Bartad', principalName: 'Shri I. Mitra', principalContact: '+91 99000 11135', village: 'Bartad', taluka: 'Dharampur', district: 'Valsad', studentStrength: 89, sessionsTarget: 20, sessionsConducted: 10, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_36', name: 'Naniba ashram shala', principalName: 'Shri J. Dhar', principalContact: '+91 99000 11136', village: 'Naniba', taluka: 'Dharampur', district: 'Valsad', studentStrength: 128, sessionsTarget: 20, sessionsConducted: 15, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_37', name: 'Ambadalat Primary school', principalName: 'Shri K. Nag', principalContact: '+91 99000 11137', village: 'Ambadalat', taluka: 'Dharampur', district: 'Valsad', studentStrength: 100, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_38', name: 'Kamalzari primary school', principalName: 'Shri L. Som', principalContact: '+91 99000 11138', village: 'Kamalzari', taluka: 'Dharampur', district: 'Valsad', studentStrength: 91, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_39', name: 'Kelipada primary school', principalName: 'Shri M. Guha', principalContact: '+91 99000 11139', village: 'Kelipada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 97, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_40', name: 'Molaamba Primary school', principalName: 'Shri N. Barua', principalContact: '+91 99000 11140', village: 'Molaamba', taluka: 'Dharampur', district: 'Valsad', studentStrength: 118, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_41', name: 'Khanpur primary school', principalName: 'Shri O. Sinha', principalContact: '+91 99000 11141', village: 'Khanpur', taluka: 'Dharampur', district: 'Valsad', studentStrength: 83, sessionsTarget: 20, sessionsConducted: 9, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_42', name: 'Bopi Primary school', principalName: 'Shri P. Sur', principalContact: '+91 99000 11142', village: 'Bopi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 104, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_43', name: 'Bapu Ashram shala Bopi', principalName: 'Shri Q. Kar', principalContact: '+91 99000 11143', village: 'Bopi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 136, sessionsTarget: 20, sessionsConducted: 16, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_44', name: 'Maji Rajbaa Kanya shala dharampur', principalName: 'Shri R. De', principalContact: '+91 99000 11144', village: 'Dharampur', taluka: 'Dharampur', district: 'Valsad', studentStrength: 155, sessionsTarget: 20, sessionsConducted: 19, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_45', name: 'Ashram Shala Asura', principalName: 'Shri S. Roy', principalContact: '+91 99000 11145', village: 'Asura', taluka: 'Dharampur', district: 'Valsad', studentStrength: 122, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_46', name: 'Moti Dholdungri Primary school', principalName: 'Shri T. Paul', principalContact: '+91 99000 11146', village: 'Moti Dholdungri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 110, sessionsTarget: 20, sessionsConducted: 13, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_47', name: 'Khatana Primary school', principalName: 'Shri U. Sen', principalContact: '+91 99000 11147', village: 'Khatana', taluka: 'Dharampur', district: 'Valsad', studentStrength: 94, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_48', name: 'Dhamni Mukhya Shala', principalName: 'Shri V. Das', principalContact: '+91 99000 11148', village: 'Dhamni', taluka: 'Dharampur', district: 'Valsad', studentStrength: 115, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_49', name: 'UMARMAAD VARG SHALA', principalName: 'Shri W. Nag', principalContact: '+91 99000 11149', village: 'Umarmaad', taluka: 'Dharampur', district: 'Valsad', studentStrength: 78, sessionsTarget: 20, sessionsConducted: 9, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_50', name: 'Karanjveri Primary school (2)', principalName: 'Shri X. Som', principalContact: '+91 99000 11150', village: 'Karanjveri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 102, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_51', name: 'ASHRAMSHALA DHAMNI', principalName: 'Shri Y. Bose', principalContact: '+91 99000 11151', village: 'Dhamni', taluka: 'Dharampur', district: 'Valsad', studentStrength: 125, sessionsTarget: 20, sessionsConducted: 15, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_52', name: 'BEJBHAVADA PRIMARY SCHOOL', principalName: 'Shri Z. Dutt', principalContact: '+91 99000 11152', village: 'Bejbhavada', taluka: 'Dharampur', district: 'Valsad', studentStrength: 132, sessionsTarget: 20, sessionsConducted: 16, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_53', name: 'Mendha Primary school', principalName: 'Shri A. Guha', principalContact: '+91 99000 11153', village: 'Mendha', taluka: 'Dharampur', district: 'Valsad', studentStrength: 87, sessionsTarget: 20, sessionsConducted: 10, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_54', name: 'bheshdhara / pendha', principalName: 'Shri B. Kar', principalContact: '+91 99000 11154', village: 'Bheshdhara', taluka: 'Dharampur', district: 'Valsad', studentStrength: 106, sessionsTarget: 20, sessionsConducted: 12, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_55', name: 'ashram shala bhesdhara', principalName: 'Shri C. Sen', principalContact: '+91 99000 11155', village: 'Bhesdhara', taluka: 'Dharampur', district: 'Valsad', studentStrength: 118, sessionsTarget: 20, sessionsConducted: 14, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_56', name: 'Lakadmal Primary school', principalName: 'Shri D. Ray', principalContact: '+91 99000 11156', village: 'Lakadmal', taluka: 'Dharampur', district: 'Valsad', studentStrength: 92, sessionsTarget: 20, sessionsConducted: 11, runningProgrammes: ['Pre-Vocational'] },
+
+  // Second list schools (codes S_PV_57 to S_PV_71)
+  { code: 'S_PV_57', name: 'Kherlav pra school', principalName: 'Shri E. Roy', principalContact: '+91 99000 11157', village: 'Kherlav', taluka: 'Dharampur', district: 'Valsad', studentStrength: 85, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_58', name: 'Barai prathmik shala', principalName: 'Shri F. Pal', principalContact: '+91 99000 11158', village: 'Barai', taluka: 'Dharampur', district: 'Valsad', studentStrength: 95, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_59', name: 'Goyma mukhaya shala', principalName: 'Shri G. Pal', principalContact: '+91 99000 11159', village: 'Goyma', taluka: 'Dharampur', district: 'Valsad', studentStrength: 112, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_60', name: 'Khutej prathmik shala', principalName: 'Shri H. Dutt', principalContact: '+91 99000 11160', village: 'Khutej', taluka: 'Dharampur', district: 'Valsad', studentStrength: 90, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_61', name: 'Pariya Haran faliya Primary School', principalName: 'Shri I. Dutt', principalContact: '+91 99000 11161', village: 'Pariya', taluka: 'Dharampur', district: 'Valsad', studentStrength: 80, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_62', name: 'Rohina mukhaya school', principalName: 'Shri J. Dutt', principalContact: '+91 99000 11162', village: 'Rohina', taluka: 'Dharampur', district: 'Valsad', studentStrength: 105, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_63', name: 'Navera mukhya pra shala', principalName: 'Shri K. Dutt', principalContact: '+91 99000 11163', village: 'Navera', taluka: 'Dharampur', district: 'Valsad', studentStrength: 98, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_64', name: 'Ozar tad faliya pra school', principalName: 'Shri L. Dutt', principalContact: '+91 99000 11164', village: 'Ozar', taluka: 'Dharampur', district: 'Valsad', studentStrength: 85, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_65', name: 'Kakadmati Primary School', principalName: 'Shri M. Dutt', principalContact: '+91 99000 11165', village: 'Kakadmati', taluka: 'Dharampur', district: 'Valsad', studentStrength: 96, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_66', name: 'Parvasa mukhya school', principalName: 'Shri N. Dutt', principalContact: '+91 99000 11166', village: 'Parvasa', taluka: 'Dharampur', district: 'Valsad', studentStrength: 110, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_67', name: 'Rata prathmik Shala', principalName: 'Shri O. Dutt', principalContact: '+91 99000 11167', village: 'Rata', taluka: 'Dharampur', district: 'Valsad', studentStrength: 90, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_68', name: 'Rabdi Prmary School', principalName: 'Shri P. Dutt', principalContact: '+91 99000 11168', village: 'Rabdi', taluka: 'Dharampur', district: 'Valsad', studentStrength: 82, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_69', name: 'Pati primary school', principalName: 'Shri Q. Dutt', principalContact: '+91 99000 11169', village: 'Pati', taluka: 'Dharampur', district: 'Valsad', studentStrength: 88, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_70', name: 'Arnala pra shala school', principalName: 'Shri R. Dutt', principalContact: '+91 99000 11170', village: 'Arnala', taluka: 'Dharampur', district: 'Valsad', studentStrength: 120, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] },
+  { code: 'S_PV_71', name: 'Nevri pra school', principalName: 'Shri S. Dutt', principalContact: '+91 99000 11171', village: 'Nevri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 95, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] }
 ];
 
 const SEED_STUDENTS: Student[] = [
@@ -530,6 +605,79 @@ const SEED_MONITORING: MonitoringVisit[] = [
   }
 ];
 
+const SEED_TIMETABLE: TimetableEntry[] = [
+  // Ecco 1
+  { id: 'tt1', group: 'Ecco 1', teacherName: 'Krunal', dayOfWeek: 'Monday', schoolName: 'Khanda Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt2', group: 'Ecco 1', teacherName: 'Krunal', dayOfWeek: 'Tuesday', schoolName: 'SRVV Tamchhadi', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt3', group: 'Ecco 1', teacherName: 'Krunal', dayOfWeek: 'Thursday', schoolName: 'chondha Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt4', group: 'Ecco 1', teacherName: 'Krunal', dayOfWeek: 'Friday', schoolName: 'Khatana Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  
+  { id: 'tt5', group: 'Ecco 1', teacherName: 'Jinal', dayOfWeek: 'Monday', schoolName: 'Sawarmal Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt6', group: 'Ecco 1', teacherName: 'Jinal', dayOfWeek: 'Tuesday', schoolName: 'Tamchhadi Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt7', group: 'Ecco 1', teacherName: 'Jinal', dayOfWeek: 'Wednesday', schoolName: 'Sidumbar Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt8', group: 'Ecco 1', teacherName: 'Jinal', dayOfWeek: 'Thursday', schoolName: 'Ananad ashram Shala chondha', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt9', group: 'Ecco 1', teacherName: 'Jinal', dayOfWeek: 'Friday', schoolName: 'Moti Dholdungri Primary school', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt10', group: 'Ecco 1', teacherName: 'Sunita', dayOfWeek: 'Monday', schoolName: 'Nilparn Ashram shala Khanda', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt11', group: 'Ecco 1', teacherName: 'Sunita', dayOfWeek: 'Tuesday', schoolName: 'Ashram Shala Tamchhadi', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt12', group: 'Ecco 1', teacherName: 'Sunita', dayOfWeek: 'Wednesday', schoolName: 'Avdha Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt13', group: 'Ecco 1', teacherName: 'Sunita', dayOfWeek: 'Thursday', schoolName: 'Molaamba Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt14', group: 'Ecco 1', teacherName: 'Sunita', dayOfWeek: 'Friday', schoolName: 'Kanya Ashram Shala Tanki', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt15', group: 'Ecco 1', teacherName: 'Sumanti', dayOfWeek: 'Monday', schoolName: 'Bhavada Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt16', group: 'Ecco 1', teacherName: 'Sumanti', dayOfWeek: 'Tuesday', schoolName: 'Bhensdara Prathmik shala / pendha prathmik shala / makadban', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt17', group: 'Ecco 1', teacherName: 'Sumanti', dayOfWeek: 'Thursday', schoolName: 'Khanpur Prathmik shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt18', group: 'Ecco 1', teacherName: 'Sumanti', dayOfWeek: 'Friday', schoolName: 'Karanjveri Primary school (two teachers)', district: 'Valsad', taluka: 'Dharampur' },
+
+  // Ecco 2
+  { id: 'tt19', group: 'Ecco 2', teacherName: 'Mital', dayOfWeek: 'Monday', schoolName: 'Navinagri Primary', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt20', group: 'Ecco 2', teacherName: 'Mital', dayOfWeek: 'Tuesday', schoolName: 'Besfaliya bilpudi Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt21', group: 'Ecco 2', teacherName: 'Mital', dayOfWeek: 'Thursday', schoolName: 'Jagiri faliya Primary school Bartad', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt22', group: 'Ecco 2', teacherName: 'Mital', dayOfWeek: 'Friday', schoolName: 'Dhamni Mukhya Shala', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt23', group: 'Ecco 2', teacherName: 'Mahendra', dayOfWeek: 'Monday', schoolName: 'Malanpada Primary school, Dasherapati', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt24', group: 'Ecco 2', teacherName: 'Mahendra', dayOfWeek: 'Tuesday', schoolName: 'Primary school Dungarpada', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt25', group: 'Ecco 2', teacherName: 'Mahendra', dayOfWeek: 'Wednesday', schoolName: 'Barumal primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt26', group: 'Ecco 2', teacherName: 'Mahendra', dayOfWeek: 'Thursday', schoolName: 'Naniba ashram shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt27', group: 'Ecco 2', teacherName: 'Mahendra', dayOfWeek: 'Friday', schoolName: 'Maji Rajbaa Kanya shala dharampur', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt28', group: 'Ecco 2', teacherName: 'Anjana', dayOfWeek: 'Monday', schoolName: 'Baroliya Mukhya shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt29', group: 'Ecco 2', teacherName: 'Anjana', dayOfWeek: 'Tuesday', schoolName: 'Kelavni Kendra shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt30', group: 'Ecco 2', teacherName: 'Anjana', dayOfWeek: 'Wednesday', schoolName: 'Rajmahal road Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt31', group: 'Ecco 2', teacherName: 'Anjana', dayOfWeek: 'Thursday', schoolName: 'Kamalzari primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt32', group: 'Ecco 2', teacherName: 'Anjana', dayOfWeek: 'Friday', schoolName: 'Ashram Shala Asura', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt33', group: 'Ecco 2', teacherName: 'Anjali', dayOfWeek: 'Monday', schoolName: 'Ozarpada Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt34', group: 'Ecco 2', teacherName: 'Anjali', dayOfWeek: 'Tuesday', schoolName: 'Patel faliya Prathmik Shala Kelavni', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt35', group: 'Ecco 2', teacherName: 'Anjali', dayOfWeek: 'Wednesday', schoolName: 'Ghogharpati Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt36', group: 'Ecco 2', teacherName: 'Anjali', dayOfWeek: 'Thursday', schoolName: 'Kelipada primary school', district: 'Valsad', taluka: 'Dharampur' },
+
+  // Ecco 3
+  { id: 'tt37', group: 'Ecco 3', teacherName: 'Leelaben', dayOfWeek: 'Monday', schoolName: 'Karanjveri Patel faliya', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt38', group: 'Ecco 3', teacherName: 'Leelaben', dayOfWeek: 'Tuesday', schoolName: 'Vidyamandir sherimal', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt39', group: 'Ecco 3', teacherName: 'Leelaben', dayOfWeek: 'Wednesday', schoolName: 'Ranpada Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt40', group: 'Ecco 3', teacherName: 'Leelaben', dayOfWeek: 'Thursday', schoolName: 'Luheri Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt41', group: 'Ecco 3', teacherName: 'Leelaben', dayOfWeek: 'Friday', schoolName: 'UMARMAAD VARG SHALA', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt42', group: 'Ecco 3', teacherName: 'Divyesh', dayOfWeek: 'Monday', schoolName: 'Kagnvi Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt43', group: 'Ecco 3', teacherName: 'Divyesh', dayOfWeek: 'Tuesday', schoolName: 'Kharvel Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt44', group: 'Ecco 3', teacherName: 'Divyesh', dayOfWeek: 'Wednesday', schoolName: 'Kanurbarda Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt45', group: 'Ecco 3', teacherName: 'Divyesh', dayOfWeek: 'Thursday', schoolName: 'Ambadalat Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt46', group: 'Ecco 3', teacherName: 'Divyesh', dayOfWeek: 'Friday', schoolName: 'ASHRAMSHALA DHAMNI', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt47', group: 'Ecco 3', teacherName: 'Vaishali', dayOfWeek: 'Monday', schoolName: 'Ashram Shala Bhensdara', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt48', group: 'Ecco 3', teacherName: 'Vaishali', dayOfWeek: 'Tuesday', schoolName: 'Patel faliya Baroliya', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt49', group: 'Ecco 3', teacherName: 'Vaishali', dayOfWeek: 'Wednesday', schoolName: 'Asura primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt50', group: 'Ecco 3', teacherName: 'Vaishali', dayOfWeek: 'Thursday', schoolName: 'Bopi Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt51', group: 'Ecco 3', teacherName: 'Vaishali', dayOfWeek: 'Friday', schoolName: 'BEJBHAVADA PRIMARY SCHOOL', district: 'Valsad', taluka: 'Dharampur' },
+
+  { id: 'tt52', group: 'Ecco 3', teacherName: 'Manisha', dayOfWeek: 'Monday', schoolName: 'Lakadmal Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt53', group: 'Ecco 3', teacherName: 'Manisha', dayOfWeek: 'Tuesday', schoolName: 'Barnti Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt54', group: 'Ecco 3', teacherName: 'Manisha', dayOfWeek: 'Wednesday', schoolName: 'Kunkan faliya Primary school (Poonam)', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt55', group: 'Ecco 3', teacherName: 'Manisha', dayOfWeek: 'Thursday', schoolName: 'Bapu Ashram shala Bopi', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt56', group: 'Ecco 3', teacherName: 'Manisha', dayOfWeek: 'Friday', schoolName: 'Mendha Primary school', district: 'Valsad', taluka: 'Dharampur' }
+];
+
 // Database Manager wrapper Class utilizing HTML5 localStorage
 class OmpDatabase {
   constructor() {
@@ -540,9 +688,19 @@ class OmpDatabase {
     if (!localStorage.getItem('omp_users')) {
       localStorage.setItem('omp_users', JSON.stringify(SEED_USERS));
     }
-    if (!localStorage.getItem('omp_schools')) {
-      localStorage.setItem('omp_schools', JSON.stringify(SEED_SCHOOLS));
-    }
+    
+    // Always merge schools to ensure all 71 Pre-Vocational schools are registered
+    const existingSchools = localStorage.getItem('omp_schools') 
+      ? JSON.parse(localStorage.getItem('omp_schools')!) 
+      : [];
+    const mergedSchools = [...existingSchools];
+    SEED_SCHOOLS.forEach(seedSch => {
+      if (!mergedSchools.some((s: any) => s.code === seedSch.code)) {
+        mergedSchools.push(seedSch);
+      }
+    });
+    localStorage.setItem('omp_schools', JSON.stringify(mergedSchools));
+
     if (!localStorage.getItem('omp_students')) {
       localStorage.setItem('omp_students', JSON.stringify(SEED_STUDENTS));
     }
@@ -566,6 +724,22 @@ class OmpDatabase {
     }
     if (!localStorage.getItem('omp_monitoring')) {
       localStorage.setItem('omp_monitoring', JSON.stringify(SEED_MONITORING));
+    }
+    
+    // Always merge timetable entries to keep layouts up-to-date
+    const existingTimetable = localStorage.getItem('omp_timetable') 
+      ? JSON.parse(localStorage.getItem('omp_timetable')!) 
+      : [];
+    const mergedTimetable = [...existingTimetable];
+    SEED_TIMETABLE.forEach(seedTt => {
+      if (!mergedTimetable.some((t: any) => t.id === seedTt.id)) {
+        mergedTimetable.push(seedTt);
+      }
+    });
+    localStorage.setItem('omp_timetable', JSON.stringify(mergedTimetable));
+
+    if (!localStorage.getItem('omp_audit_logs')) {
+      localStorage.setItem('omp_audit_logs', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_sync_queue')) {
       localStorage.setItem('omp_sync_queue', JSON.stringify([]));
@@ -616,7 +790,9 @@ class OmpDatabase {
       'omp_transport': 'transport',
       'omp_counselling': 'counselling',
       'omp_monitoring': 'monitoring',
-      'omp_alerts': 'alerts'
+      'omp_alerts': 'alerts',
+      'omp_timetable': 'timetable',
+      'omp_audit_logs': 'audit_logs'
     };
     return mapping[tableName] || tableName.replace('omp_', '');
   }
@@ -736,7 +912,9 @@ class OmpDatabase {
       { name: 'omp_transport', key: 'id' },
       { name: 'omp_counselling', key: 'id' },
       { name: 'omp_monitoring', key: 'id' },
-      { name: 'omp_alerts', key: 'id' }
+      { name: 'omp_alerts', key: 'id' },
+      { name: 'omp_timetable', key: 'id' },
+      { name: 'omp_audit_logs', key: 'id' }
     ];
 
     for (const table of tables) {
@@ -977,6 +1155,88 @@ class OmpDatabase {
       this.queueSyncItem('omp_monitoring', 'insert', visit);
     }
     this.saveTable('omp_monitoring', visits);
+  }
+
+  // Pre Vocational Timetable CRUD
+  public getTimetable(): TimetableEntry[] {
+    return this.getTable<TimetableEntry>('omp_timetable');
+  }
+
+  public saveTimetableEntry(entry: TimetableEntry) {
+    const timetable = this.getTimetable();
+    const index = timetable.findIndex(t => t.id === entry.id);
+    
+    let previousValue = '';
+    if (index >= 0) {
+      previousValue = JSON.stringify(timetable[index]);
+      timetable[index] = entry;
+      this.queueSyncItem('omp_timetable', 'update', entry);
+    } else {
+      timetable.push(entry);
+      this.queueSyncItem('omp_timetable', 'insert', entry);
+    }
+    this.saveTable('omp_timetable', timetable);
+    
+    // Write Audit log
+    this.writeAuditLog('admin', 'Timetable Entry Saved', `Saved timetable for Group ${entry.group}, Teacher ${entry.teacherName} on ${entry.dayOfWeek}`, previousValue, JSON.stringify(entry));
+    
+    // Trigger notification alert
+    const newAlert: SystemAlert = {
+      id: Math.random().toString(36).substr(2, 9),
+      type: 'timetable_changed',
+      severity: 'medium',
+      message: `Timetable altered: ${entry.teacherName} assigned to ${entry.schoolName} on ${entry.dayOfWeek}.`,
+      programme: 'Pre-Vocational',
+      createdAt: new Date().toISOString(),
+      isResolved: false
+    };
+    this.addAlert(newAlert);
+  }
+
+  public importTimetable(entries: TimetableEntry[]) {
+    this.saveTable('omp_timetable', entries);
+    if (isFirebaseConfigured && this.isNetworkOnline()) {
+      for (const entry of entries) {
+        this.queueSyncItem('omp_timetable', 'insert', entry);
+      }
+    }
+    this.writeAuditLog('admin', 'Timetable Spreadsheet Import', `Imported ${entries.length} timetable entries via Excel/CSV.`, '', `Imported count: ${entries.length}`);
+    
+    // Trigger alert
+    const newAlert: SystemAlert = {
+      id: Math.random().toString(36).substr(2, 9),
+      type: 'timetable_changed',
+      severity: 'high',
+      message: `Timetable changed: Bulk imported ${entries.length} schedules.`,
+      programme: 'Pre-Vocational',
+      createdAt: new Date().toISOString(),
+      isResolved: false
+    };
+    this.addAlert(newAlert);
+  }
+
+  // Audit Logs
+  public getAuditLogs(): ActivityLog[] {
+    return this.getTable<ActivityLog>('omp_audit_logs');
+  }
+
+  public writeAuditLog(username: string, action: string, details: string, previousValue = '', newValue = '') {
+    const logs = this.getAuditLogs();
+    const newLog: ActivityLog = {
+      id: 'aud_' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action,
+      details,
+      username,
+      previousValue,
+      newValue
+    };
+    logs.unshift(newLog);
+    this.saveTable('omp_audit_logs', logs);
+    
+    if (isFirebaseConfigured) {
+      this.queueSyncItem('omp_audit_logs', 'insert', newLog);
+    }
   }
 }
 
