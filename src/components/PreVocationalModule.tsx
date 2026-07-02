@@ -51,6 +51,8 @@ export const PreVocationalModule: React.FC = () => {
   const [trainerRemarks, setTrainerRemarks] = useState('');
   const [issuesFaced, setIssuesFaced] = useState('');
   const [photoBlob, setPhotoBlob] = useState<string | null>(null);
+  const [selectedTimetableForConduct, setSelectedTimetableForConduct] = useState<TimetableEntry | null>(null);
+  const [selectedLPSession, setSelectedLPSession] = useState('LP 1');
 
   // Real-time update listeners
   useEffect(() => {
@@ -156,6 +158,8 @@ export const PreVocationalModule: React.FC = () => {
     const updated: Session = {
       ...activeTrainerSession,
       status: 'Conducted',
+      subject: `${selectedLPSession} Session`,
+      lessonPlanId: selectedLPSession,
       conductedAt: new Date().toISOString(),
       conductedBy: currentUser.name,
       studentsPresentCount: presentStudents,
@@ -319,14 +323,14 @@ export const PreVocationalModule: React.FC = () => {
   // For presentation convenience, if weekend todayIndex defaults to Monday (1)
   const currentWeekday = todayIndex === 0 || todayIndex === 6 ? 'Monday' : weekdayNames[todayIndex];
 
-  // Resolve today's school for trainer (Sunita maps to 'trainer.rahul' inside auth for demo)
-  const trainerName = currentUser?.name.includes('Rahul') ? 'Sunita' : currentUser?.name.includes('Admin') ? 'Sunita' : 'Krunal';
-  const todaysTimetable = timetable.find(t => t.teacherName === trainerName && t.dayOfWeek === currentWeekday);
-
-  // Retrieve today's session status matching school
-  const activeSessionForToday = todaysTimetable 
-    ? sessions.find(s => s.schoolCode === 'S102' && s.date === new Date().toISOString().split('T')[0]) 
-    : null;
+  // Resolve teacher name for timetable filter (fallback to Sunita for admin/testing)
+  const trainerName = currentUser?.name.includes('Rahul') 
+    ? 'Sunita' 
+    : currentUser?.name.includes('Admin') 
+    ? 'Sunita' 
+    : currentUser?.role === 'trainer' 
+    ? currentUser.name.split(' ')[0] 
+    : 'Sunita';
 
   // Dashboard Stats calculations
   const totalStudents = db.getStudents().filter(s => {
@@ -851,81 +855,104 @@ export const PreVocationalModule: React.FC = () => {
       {subTab === 'sessions' && (
         <div className="space-y-6">
           
-          {/* Trainer Quick Today school overview */}
-          {isTrainerRole && todaysTimetable && (
+          {/* Trainer Day-Wise Weekly Schedule Checklist */}
+          {isTrainerRole && (
             <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 p-5 rounded-lg shadow-sm space-y-4">
               <div className="flex justify-between items-start">
                 <div>
                   <span className="text-[10px] bg-primary/20 text-primary font-bold px-2 py-0.5 rounded uppercase">Trainer Action Center</span>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">Today's Class Schedule</h3>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">My Day-Wise Weekly Schedule</h3>
                 </div>
-                <span className="text-xs font-mono text-slate-500 font-bold">{currentWeekday}</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-xs">
-                <div className="p-3 bg-white dark:bg-dark-surface rounded border border-slate-205 dark:border-dark-border">
-                  <span className="block text-slate-400 font-semibold">Today's School</span>
-                  <span className="font-extrabold text-slate-900 dark:text-white mt-1.5 block text-sm">{todaysTimetable.schoolName}</span>
-                </div>
-
-                <div className="p-3 bg-white dark:bg-dark-surface rounded border border-slate-205 dark:border-dark-border">
-                  <span className="block text-slate-400 font-semibold">Suggested Time Slot</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-1.5 block text-sm">10:00 AM to 12:00 PM</span>
-                </div>
-
-                <div className="p-3 bg-white dark:bg-dark-surface rounded border border-slate-205 dark:border-dark-border">
-                  <span className="block text-slate-400 font-semibold">Active Programme</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-1.5 block text-sm capitalize">Pre Vocational ({todaysTimetable.group})</span>
+                <div className="text-right">
+                  <span className="text-xs font-mono text-slate-505 font-bold block">Current Day: {currentWeekday}</span>
+                  <span className="text-[10px] text-slate-400">Select any day's allotted class to report execution</span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                {activeSessionForToday && activeSessionForToday.status === 'Scheduled' ? (
-                  <button
-                    onClick={() => {
-                      setActiveTrainerSession(activeSessionForToday);
-                      setShowConductedModal(true);
-                    }}
-                    className="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded text-xs font-bold shadow flex items-center gap-1.5 transition-all"
-                  >
-                    <Play size={12} fill="currentColor" />
-                    <span>Mark Class Conducted</span>
-                  </button>
-                ) : activeSessionForToday ? (
-                  <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-bold rounded">
-                    <CheckCircle size={14} />
-                    <span>Session reported: {activeSessionForToday.status} ({activeSessionForToday.studentsPresentCount} students present)</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      // Generate demo session
-                      const mockSess: Session = {
-                        id: 'PV_DEMO_' + Math.floor(100 + Math.random() * 900),
-                        programme: 'Pre-Vocational',
-                        schoolCode: 'S102',
-                        date: new Date().toISOString().split('T')[0],
-                        time: '10:00 AM',
-                        trainerUsername: currentUser.username,
-                        subject: 'Intro to Safety and Hand Tools',
-                        lessonPlanId: 'LP303',
-                        status: 'Scheduled',
-                        attendancePresent: [],
-                        attendanceAbsent: [],
-                        groupName: todaysTimetable.group
-                      };
-                      db.saveSession(mockSess);
-                      loadData();
-                      setActiveTrainerSession(mockSess);
-                      setShowConductedModal(true);
-                    }}
-                    className="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded text-xs font-bold shadow flex items-center gap-1.5 transition-all"
-                  >
-                    <Play size={12} fill="currentColor" />
-                    <span>Initialize Today's Session</span>
-                  </button>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-2 text-xs">
+                {dayOptions.map(day => {
+                  const allotment = timetable.find(t => t.teacherName === trainerName && t.dayOfWeek === day);
+                  
+                  if (!allotment) {
+                    return (
+                      <div key={day} className="p-3 bg-slate-100/50 dark:bg-dark-card/20 rounded border border-dashed border-slate-200 dark:border-dark-border/40 opacity-70">
+                        <span className="font-extrabold text-slate-400 block mb-1">{day}</span>
+                        <span className="text-[10px] text-slate-400 italic font-semibold">No Class Allotted</span>
+                      </div>
+                    );
+                  }
+
+                  const schoolObj = db.getSchools().find(s => s.name === allotment.schoolName);
+                  const schoolCode = schoolObj ? schoolObj.code : 'S102';
+                  const reportedSession = sessions.find(s => s.schoolCode === schoolCode && s.date === new Date().toISOString().split('T')[0]);
+
+                  return (
+                    <div key={day} className={`p-3 rounded border flex flex-col justify-between ${
+                      day === currentWeekday 
+                        ? 'bg-white dark:bg-dark-surface border-primary shadow-sm ring-1 ring-primary/25' 
+                        : 'bg-white dark:bg-dark-surface border-slate-205 dark:border-dark-border'
+                    }`}>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className={`font-extrabold block text-[11px] ${day === currentWeekday ? 'text-primary' : 'text-slate-500'}`}>{day}</span>
+                          {day === currentWeekday && (
+                            <span className="text-[8px] font-bold bg-primary text-white px-1 py-0.2 rounded uppercase animate-pulse">Today</span>
+                          )}
+                        </div>
+                        <span className="font-extrabold text-slate-900 dark:text-white block truncate text-[11px]" title={allotment.schoolName}>
+                          {allotment.schoolName}
+                        </span>
+                        <span className="text-[10px] text-slate-450 block mt-0.5">Ecco Group: {allotment.group}</span>
+                      </div>
+
+                      <div className="mt-3.5">
+                        {reportedSession ? (
+                          <div className={`p-1.5 rounded text-[10px] font-bold text-center border ${
+                            reportedSession.status === 'Completed'
+                              ? 'bg-green-500/10 border-green-500/20 text-green-500'
+                              : reportedSession.status === 'Verified'
+                              ? 'bg-blue-500/10 border-blue-500/20 text-blue-500'
+                              : 'bg-amber-500/10 border-amber-500/20 text-accent font-bold animate-pulse'
+                          }`}>
+                            {reportedSession.lessonPlanId || 'LP Taken'}: {reportedSession.status}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedTimetableForConduct(allotment);
+                              const mockSess: Session = {
+                                id: 'PV_SES_' + Math.floor(100 + Math.random() * 900),
+                                programme: 'Pre-Vocational',
+                                schoolCode: schoolCode,
+                                date: new Date().toISOString().split('T')[0],
+                                time: '10:00 AM',
+                                trainerUsername: currentUser.username,
+                                subject: 'LP 1 Session',
+                                lessonPlanId: 'LP 1',
+                                status: 'Scheduled',
+                                attendancePresent: [],
+                                attendanceAbsent: [],
+                                groupName: allotment.group
+                              };
+                              setActiveTrainerSession(mockSess);
+                              setPresentStudents(25);
+                              setTrainerRemarks('');
+                              setIssuesFaced('');
+                              setPhotoBlob(null);
+                              setSelectedLPSession('LP 1');
+                              setShowConductedModal(true);
+                            }}
+                            className="w-full py-1.5 bg-primary hover:bg-primary-dark text-white rounded text-[10px] font-bold shadow flex items-center justify-center gap-1 transition-all"
+                          >
+                            <Play size={10} fill="currentColor" />
+                            <span>Mark Conducted</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1087,6 +1114,24 @@ export const PreVocationalModule: React.FC = () => {
                 </div>
               </div>
 
+              {/* LP Session Dropdown */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Select LP Session taken *</label>
+                <select
+                  value={selectedLPSession}
+                  onChange={(e) => setSelectedLPSession(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white font-bold font-heading"
+                >
+                  <option value="LP 1">LP Form 1 (Introduction & Setup)</option>
+                  <option value="LP 2">LP Form 2 (Basics & Hand Tools)</option>
+                  <option value="LP 3">LP Form 3 (Practical Demonstration)</option>
+                  <option value="LP 4">LP Form 4 (Student Hands-on Activity)</option>
+                  <option value="LP 5">LP Form 5 (Safety Protocols Checklist)</option>
+                  <option value="LP 6">LP Form 6 (Student Feedback & Remarks)</option>
+                  <option value="LP 7">LP Form 7 (Module Review & Assessment)</option>
+                </select>
+              </div>
+
               {/* Present count */}
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Number of Students Present</label>
@@ -1096,7 +1141,7 @@ export const PreVocationalModule: React.FC = () => {
                   min={1}
                   value={presentStudents}
                   onChange={(e) => setPresentStudents(parseInt(e.target.value) || 0)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white"
+                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-205 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white"
                 />
               </div>
 
