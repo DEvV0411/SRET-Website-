@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
 import { User, UserRole, ProgrammeName } from '../types';
-import { UserPlus, Shield, Eye, Settings, RefreshCw, KeyRound, Ban, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Shield, Eye, Settings, RefreshCw, KeyRound, Ban, CheckCircle2, Database, Wifi } from 'lucide-react';
+import { isFirebaseConfigured } from '../lib/firebase';
 
 export const UserManager: React.FC = () => {
   const { t } = useAuth();
@@ -11,6 +12,25 @@ export const UserManager: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Seeding states
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [seedCount, setSeedCount] = useState<number | null>(null);
+
+  const handleSeedDatabase = async () => {
+    setIsSeeding(true);
+    try {
+      const count = await db.seedFirestoreDatabase();
+      setSeedCount(count);
+      window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+        detail: `Firebase Seeding Complete! ${count} records created.` 
+      }));
+    } catch (err: any) {
+      alert(`Seeding failed: ${err.message}`);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   // Form states
   const [username, setUsername] = useState('');
@@ -251,6 +271,56 @@ export const UserManager: React.FC = () => {
               Select any user account from the registry list to modify their security roles, active statuses, or configure granular access permissions.
             </div>
           )}
+
+          {/* Database Utilities Panel */}
+          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-5 rounded-md shadow-sm space-y-4">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-dark-border">
+              <Database size={16} className="text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Firebase Cloud Database</h3>
+            </div>
+            
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400 font-semibold">Firebase Status:</span>
+                <span className={`font-bold ${isFirebaseConfigured ? 'text-green-500' : 'text-slate-400'}`}>
+                  {isFirebaseConfigured ? '● Active (Cloud Mode)' : '○ Inactive (Local-only)'}
+                </span>
+              </div>
+              
+              <p className="text-[10px] text-slate-500 leading-normal">
+                {isFirebaseConfigured 
+                  ? 'Connects real-time queries to your Cloud Firestore cluster. Auto-synchronizes offline queues upon network restoration.' 
+                  : 'Add environment parameters to your .env file and restart the server to toggle live sync workflows.'}
+              </p>
+
+              {isFirebaseConfigured && (
+                <div className="space-y-2 pt-2">
+                  <button
+                    onClick={handleSeedDatabase}
+                    disabled={isSeeding}
+                    className="w-full py-2 bg-primary hover:bg-primary-dark text-white rounded text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    {isSeeding ? <RefreshCw size={14} className="animate-spin" /> : <Database size={14} />}
+                    <span>Seed Firestore Database</span>
+                  </button>
+                  
+                  {seedCount !== null && (
+                    <div className="p-2 bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold rounded text-center">
+                      Successfully seeded {seedCount} records to Cloud Firestore.
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => db.syncPendingQueue()}
+                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-all border border-slate-200 dark:border-slate-700"
+                  >
+                    <Wifi size={14} className="text-secondary" />
+                    <span>Upload Pending Local Logs</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
       </div>

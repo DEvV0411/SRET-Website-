@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, ProgrammeName } from '../types';
 import db from '../lib/db';
+import { auth, firestoreDb, isFirebaseConfigured } from '../lib/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  onAuthStateChanged, 
+  createUserWithEmailAndPassword 
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Multi-language translation dictionary
 const DICTIONARY: Record<string, Record<'en' | 'gu', string>> = {
@@ -63,16 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedLang = localStorage.getItem('lang') as 'en' | 'gu';
     if (savedLang) setLanguageState(savedLang);
 
-    // Auto-login from local session
-    const savedUser = localStorage.getItem('omp_session_user');
-    if (savedUser) {
-      const parsed = JSON.parse(savedUser) as User;
-      const freshUser = db.getUsers().find(u => u.username === parsed.username);
-      if (freshUser && freshUser.isActive) {
-        setCurrentUser(freshUser);
-      }
-    }
-
     // Network Sync Event listeners
     const handleNetworkChange = () => {
       setIsOnline(db.isNetworkOnline());
@@ -84,35 +82,147 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('omp_network_status_change', handleNetworkChange);
     window.addEventListener('omp_sync_queue_change', handleSyncChange);
 
+    // Firebase Auth Observer or Local fallback
+    let unsubscribe: () => void = () => {};
+
+    if (isFirebaseConfigured && auth && firestoreDb) {
+      unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+          const email = firebaseUser.email || '';
+          const username = email.split('@')[0];
+          try {
+            const userDoc = await getDoc(doc(firestoreDb, 'users', username));
+            if (userDoc.exists()) {
+              setCurrentUser(userDoc.data() as User);
+            } else {
+              const seedUser = db.getUsers().find(u => u.username === username);
+              if (seedUser) {
+                setCurrentUser(seedUser);
+              }
+            }
+          } catch (err) {
+            console.error('[Firebase Auth] Error retrieving profile state:', err);
+          }
+        } else {
+          setCurrentUser(null);
+        }
+      });
+    } else {
+      // Local Storage session lookup
+      const savedUser = localStorage.getItem('omp_session_user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser) as User;
+        const freshUser = db.getUsers().find(u => u.username === parsed.username);
+        if (freshUser && freshUser.isActive) {
+          setCurrentUser(freshUser);
+        }
+      }
+    }
+
     return () => {
       window.removeEventListener('omp_network_status_change', handleNetworkChange);
       window.removeEventListener('omp_sync_queue_change', handleSyncChange);
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
   const login = async (username: string, password: string, rememberMe: boolean): Promise<boolean> => {
-    // Standard mock verification (accept 'password123' for any seeded account for validation ease)
-    const user = db.getUsers().find(u => u.username === username.trim().toLowerCase());
-    if (user && user.isActive && password === 'password123') {
-      const updatedUser = {
-        ...user,
-        lastLogin: new Date().toISOString()
-      };
-      
-      // Update DB record
-      db.saveUser(updatedUser);
-      setCurrentUser(updatedUser);
+    const cleanUsername = username.trim().toLowerCase();
 
-      if (rememberMe) {
-        localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+    if (isFirebaseConfigured && auth && firestoreDb) {
+      const email = `${cleanUsername}@omp.org`;
+      try {
+        // Try authenticating in Firebase Auth
+        await signInWithEmailAndPassword(auth, email, password);
+
+        // Retrieve Firestore metadata doc
+        const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
+        let userProfile: User;
+
+        if (userDoc.exists()) {
+          userProfile = userDoc.data() as User;
+        } else {
+          const seedUser = db.getUsers().find(u => u.username === cleanUsername);
+          userProfile = seedUser || {
+            username: cleanUsername,
+            name: cleanUsername.replace(/\./g, ' '),
+            role: 'trainer',
+            assignedProgramme: 'All',
+            assignedSchools: [],
+            assignedDistricts: ['All'],
+            isActive: true,
+            permissions: ['View Students', 'View Attendance'],
+            activityLogs: []
+          };
+          await setDoc(doc(firestoreDb, 'users', cleanUsername), userProfile);
+        }
+
+        const updatedUser = {
+          ...userProfile,
+          lastLogin: new Date().toISOString()
+        };
+
+        setCurrentUser(updatedUser);
+        if (rememberMe) {
+          localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+        }
+        return true;
+      } catch (authError: any) {
+        console.warn('[Firebase Auth] Authentication failed. Checking auto-registration...', authError.code);
+
+        // Auto signup seeded demo profiles
+        if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/cannot-find-user') {
+          const seedUser = db.getUsers().find(u => u.username === cleanUsername);
+          if (seedUser && password === 'password123') {
+            try {
+              console.log('[Firebase Auth] Creating demo account credentials:', email);
+              await createUserWithEmailAndPassword(auth, email, 'password123');
+
+              const updatedUser = {
+                ...seedUser,
+                lastLogin: new Date().toISOString()
+              };
+
+              await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
+              setCurrentUser(updatedUser);
+
+              if (rememberMe) {
+                localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+              }
+              return true;
+            } catch (regErr) {
+              console.error('[Firebase Auth] Demo registration failed:', regErr);
+            }
+          }
+        }
+        return false;
       }
-      return true;
+    } else {
+      // Local database fallback
+      const user = db.getUsers().find(u => u.username === cleanUsername);
+      if (user && user.isActive && password === 'password123') {
+        const updatedUser = {
+          ...user,
+          lastLogin: new Date().toISOString()
+        };
+        
+        db.saveUser(updatedUser);
+        setCurrentUser(updatedUser);
+
+        if (rememberMe) {
+          localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+        }
+        return true;
+      }
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     localStorage.removeItem('omp_session_user');
+    if (isFirebaseConfigured && auth) {
+      firebaseSignOut(auth).catch(err => console.error('[Firebase Auth] Sign out error:', err));
+    }
     setCurrentUser(null);
   };
 

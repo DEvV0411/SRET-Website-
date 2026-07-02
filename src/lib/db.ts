@@ -3,6 +3,8 @@ import {
   CounsellingRecord, InventoryItem, TransportRoute, 
   MonitoringVisit, SystemAlert, SyncItem 
 } from '../types';
+import { firestoreDb, isFirebaseConfigured } from './firebase';
+import { doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 
 // Mock Seed Data Definitions
 const SEED_USERS: User[] = [
@@ -603,7 +605,57 @@ class OmpDatabase {
     return this.getTable<SyncItem>('omp_sync_queue');
   }
 
+  private getFirestoreCollectionName(tableName: string): string {
+    const mapping: Record<string, string> = {
+      'omp_users': 'users',
+      'omp_schools': 'schools',
+      'omp_students': 'students',
+      'omp_sessions': 'sessions',
+      'omp_lesson_plans': 'lesson_plans',
+      'omp_inventory': 'inventory',
+      'omp_transport': 'transport',
+      'omp_counselling': 'counselling',
+      'omp_monitoring': 'monitoring',
+      'omp_alerts': 'alerts'
+    };
+    return mapping[tableName] || tableName.replace('omp_', '');
+  }
+
+  private getDocumentId(tableName: string, data: any): string {
+    if (tableName === 'omp_users') return data.username;
+    if (tableName === 'omp_schools') return data.code;
+    if (tableName === 'omp_students') return data.studentId;
+    return data.id || data.username || data.studentId || data.code;
+  }
+
+  private async syncRecordToFirestore(table: string, action: 'insert' | 'update' | 'delete', data: any) {
+    if (!isFirebaseConfigured || !firestoreDb) return;
+    const collectionName = this.getFirestoreCollectionName(table);
+    const docId = this.getDocumentId(table, data);
+    
+    if (action === 'delete') {
+      await deleteDoc(doc(firestoreDb, collectionName, docId));
+    } else {
+      await setDoc(doc(firestoreDb, collectionName, docId), data);
+    }
+  }
+
   private queueSyncItem(table: string, action: 'insert' | 'update' | 'delete', data: any) {
+    if (isFirebaseConfigured && this.isNetworkOnline()) {
+      this.syncRecordToFirestore(table, action, data)
+        .then(() => {
+          console.log(`[Firebase Firestore] Instantly synced change to /${this.getFirestoreCollectionName(table)}/${this.getDocumentId(table, data)}`);
+        })
+        .catch(err => {
+          console.warn('[Firebase Sync Engine] Direct sync failed. Buffering locally...', err);
+          this.addToLocalQueue(table, action, data);
+        });
+    } else {
+      this.addToLocalQueue(table, action, data);
+    }
+  }
+
+  private addToLocalQueue(table: string, action: 'insert' | 'update' | 'delete', data: any) {
     const queue = this.getSyncQueue();
     queue.push({
       id: Math.random().toString(36).substr(2, 9),
@@ -616,18 +668,94 @@ class OmpDatabase {
     window.dispatchEvent(new Event('omp_sync_queue_change'));
   }
 
-  public syncPendingQueue() {
+  public async syncPendingQueue() {
     const queue = this.getSyncQueue();
     if (queue.length === 0) return;
     
     console.log('[Sync Engine] Uploading operations to server database...', queue);
     
-    // Simulate server side replication delay
-    setTimeout(() => {
-      this.saveTable('omp_sync_queue', []);
-      window.dispatchEvent(new Event('omp_sync_queue_change'));
-      window.dispatchEvent(new CustomEvent('omp_toast_message', { detail: 'Sync completed successfully. 0 items remaining.' }));
-    }, 1500);
+    if (isFirebaseConfigured && firestoreDb) {
+      try {
+        const batch = writeBatch(firestoreDb);
+        let operationsCount = 0;
+        
+        for (const item of queue) {
+          const col = this.getFirestoreCollectionName(item.table);
+          const docId = this.getDocumentId(item.table, item.data);
+          const docRef = doc(firestoreDb, col, docId);
+          
+          if (item.action === 'delete') {
+            batch.delete(docRef);
+          } else {
+            batch.set(docRef, item.data);
+          }
+          operationsCount++;
+        }
+        
+        if (operationsCount > 0) {
+          await batch.commit();
+        }
+        
+        this.saveTable('omp_sync_queue', []);
+        window.dispatchEvent(new Event('omp_sync_queue_change'));
+        window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+          detail: `Firestore sync complete. ${operationsCount} records successfully uploaded.` 
+        }));
+      } catch (err) {
+        console.error('[Firebase Sync Engine] Batch sync transaction failed:', err);
+        window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+          detail: 'Auto-sync failed. Offline items remain queued.' 
+        }));
+      }
+    } else {
+      // Simulate server side replication delay
+      setTimeout(() => {
+        this.saveTable('omp_sync_queue', []);
+        window.dispatchEvent(new Event('omp_sync_queue_change'));
+        window.dispatchEvent(new CustomEvent('omp_toast_message', { detail: 'Local sync mock simulated. 0 items remaining.' }));
+      }, 1000);
+    }
+  }
+
+  // Seeding tool for administrators
+  public async seedFirestoreDatabase(): Promise<number> {
+    if (!isFirebaseConfigured || !firestoreDb) {
+      throw new Error('Firebase is not configured. Setup your .env file keys first.');
+    }
+
+    let seedCount = 0;
+    const batch = writeBatch(firestoreDb);
+
+    const tables = [
+      { name: 'omp_users', key: 'username' },
+      { name: 'omp_schools', key: 'code' },
+      { name: 'omp_students', key: 'studentId' },
+      { name: 'omp_sessions', key: 'id' },
+      { name: 'omp_lesson_plans', key: 'id' },
+      { name: 'omp_inventory', key: 'id' },
+      { name: 'omp_transport', key: 'id' },
+      { name: 'omp_counselling', key: 'id' },
+      { name: 'omp_monitoring', key: 'id' },
+      { name: 'omp_alerts', key: 'id' }
+    ];
+
+    for (const table of tables) {
+      const records = this.getTable<any>(table.name);
+      const colName = this.getFirestoreCollectionName(table.name);
+      
+      for (const record of records) {
+        const id = record[table.key];
+        const docRef = doc(firestoreDb, colName, id);
+        batch.set(docRef, record);
+        seedCount++;
+      }
+    }
+
+    if (seedCount > 0) {
+      await batch.commit();
+    }
+
+    return seedCount;
   }
 
   // --- MODULE ACTIONS ---
