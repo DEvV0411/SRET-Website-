@@ -18,7 +18,7 @@ export const Login: React.FC = () => {
     try {
       const success = await login(username, password, rememberMe);
       if (!success) {
-        setError('Invalid username or password. (Hint: password is "password123")');
+        setError('Invalid username or password.');
       }
     } catch (err) {
       setError('An error occurred during authentication.');
@@ -137,39 +137,6 @@ export const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Demo Fast Login helpers */}
-        <div className="mt-8 pt-6 border-t border-slate-800/60">
-          <p className="text-xs text-slate-500 mb-3 text-center">Fast Credentials (Click to Fill & log in):</p>
-          <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold text-slate-400">
-            <button 
-              onClick={() => handleQuickLoad('admin')}
-              className="px-2 py-1.5 bg-slate-950 border border-slate-800 rounded hover:border-slate-700 text-left truncate"
-            >
-              👑 Super Admin
-            </button>
-            <button 
-              onClick={() => handleQuickLoad('trainer.rahul')}
-              className="px-2 py-1.5 bg-slate-950 border border-slate-800 rounded hover:border-slate-700 text-left truncate"
-            >
-              ⚡ Trainer (Rahul)
-            </button>
-            <button 
-              onClick={() => handleQuickLoad('prog.head')}
-              className="px-2 py-1.5 bg-slate-950 border border-slate-800 rounded hover:border-slate-700 text-left truncate"
-            >
-              📁 Prog Head (Anjali)
-            </button>
-            <button 
-              onClick={() => handleQuickLoad('coordinator')}
-              className="px-2 py-1.5 bg-slate-950 border border-slate-800 rounded hover:border-slate-700 text-left truncate"
-            >
-              📋 PC Coordinator
-            </button>
-          </div>
-          <p className="text-[10px] text-slate-600 mt-3 text-center">
-            *Password for all accounts is: <span className="text-slate-400 select-all">password123</span>
-          </p>
-        </div>
       </div>
     </div>
   );
