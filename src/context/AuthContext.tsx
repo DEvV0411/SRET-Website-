@@ -130,22 +130,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const cleanUsername = username.trim().toLowerCase();
     const email = `${cleanUsername}@omp.org`;
 
+    // Timeout race wrapper helper
+    const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+      let timeoutId: any;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('timeout')), ms);
+      });
+      return Promise.race([promise, timeoutPromise]).finally(() => {
+        clearTimeout(timeoutId);
+      });
+    };
+
     if (isFirebaseConfigured && auth && firestoreDb) {
       try {
-        // 1. Try direct Firebase Auth sign-in first (fast-path for already registered users)
-        await signInWithEmailAndPassword(auth, email, password);
+        // 1. Try direct Firebase Auth sign-in first (fast-path for already registered users) with a 3.5s timeout limit
+        await withTimeout(signInWithEmailAndPassword(auth, email, password), 3500);
 
-        // 2. Fetch the Firestore metadata document
-        const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
+        // 2. Fetch the Firestore metadata document with a 2s timeout
         let userProfile: User;
-
-        if (userDoc.exists()) {
-          userProfile = userDoc.data() as User;
-          // Synchronize stored password with current login password
-          if (userProfile.password !== password) {
-            userProfile.password = password;
+        try {
+          const userDoc = await withTimeout(getDoc(doc(firestoreDb, 'users', cleanUsername)), 2000);
+          if (userDoc.exists()) {
+            userProfile = userDoc.data() as User;
+            // Synchronize stored password with current login password
+            if (userProfile.password !== password) {
+              userProfile.password = password;
+            }
+          } else {
+            throw new Error('Not found');
           }
-        } else {
+        } catch (docErr) {
           const seedUser = db.getUsers().find(u => u.username === cleanUsername);
           userProfile = seedUser || {
             username: cleanUsername,
@@ -166,14 +180,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           lastLogin: new Date().toISOString()
         };
 
-        await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
+        try {
+          await withTimeout(setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser), 1500);
+        } catch (writeErr) {
+          console.warn('[Firebase Auth] Firestore last login write timed out/failed, bypassing');
+        }
+
         setCurrentUser(updatedUser);
         if (rememberMe) {
           localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
         }
         return true;
       } catch (authError: any) {
-        console.warn('[Firebase Auth] Direct sign-in failed, checking database registry fallback:', authError.code);
+        console.warn('[Firebase Auth] Direct sign-in failed or timed out, checking fallback:', authError?.message || authError?.code);
 
         // 3. Fallback: Verify entered credentials against synchronized database profile
         const localUser = db.getUsers().find(u => u.username === cleanUsername);
@@ -181,24 +200,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (password === targetPassword) {
           // If valid, auto-register them in Firebase Auth if not enrolled yet
-          if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/cannot-find-user') {
+          const errorCode = authError?.code || '';
+          if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/cannot-find-user' || authError?.message === 'timeout') {
             try {
               console.log('[Firebase Auth] Auto-registering credentials:', email);
-              await createUserWithEmailAndPassword(auth, email, password);
+              await withTimeout(createUserWithEmailAndPassword(auth, email, password), 3500);
             } catch (regErr) {
-              console.warn('[Firebase Auth] Auto-registration skipped (likely already registered in Auth):', regErr);
+              console.warn('[Firebase Auth] Auto-registration skipped/failed:', regErr);
             }
           }
 
           let userProfile = localUser;
           try {
-            // Attempt to retrieve current Cloud document state
-            const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
+            const userDoc = await withTimeout(getDoc(doc(firestoreDb, 'users', cleanUsername)), 2000);
             if (userDoc.exists()) {
               userProfile = userDoc.data() as User;
             }
           } catch (firestoreErr) {
-            console.warn('[Firebase Auth] Cloud fetch blocked, using cached state:', firestoreErr);
+            console.warn('[Firebase Auth] Cloud fetch timed out/failed, using cached state:', firestoreErr);
           }
 
           const updatedUser = {
@@ -218,9 +237,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
 
           try {
-            await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
+            await withTimeout(setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser), 1500);
           } catch (writeErr) {
-            console.warn('[Firebase Auth] Cloud sync write blocked, caching locally:', writeErr);
+            console.warn('[Firebase Auth] Cloud sync write timed out/failed:', writeErr);
           }
 
           setCurrentUser(updatedUser);
