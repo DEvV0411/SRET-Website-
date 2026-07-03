@@ -737,7 +737,7 @@ const SEED_MONITORING: MonitoringVisit[] = [
 ];
 
 const SEED_TIMETABLE: TimetableEntry[] = [
-  // ==================== G1 (Ecco 1) ====================
+  // ==================== G.1 ====================
   // Monday
   { id: 'tt_g1_m1', group: 'G.1', trade: 'Ex. HH', teacherName: 'Krunal', dayOfWeek: 'Monday', schoolName: 'Khanda Primary school', district: 'Valsad', taluka: 'Dharampur' },
   { id: 'tt_g1_m2', group: 'G.1', trade: 'TT (Tech)', teacherName: 'Jinal', dayOfWeek: 'Monday', schoolName: 'Sawarmal Primary school', district: 'Valsad', taluka: 'Dharampur' },
@@ -763,56 +763,56 @@ const SEED_TIMETABLE: TimetableEntry[] = [
   { id: 'tt_g1_f3', group: 'G.1', trade: 'MM', teacherName: 'Sunita', dayOfWeek: 'Friday', schoolName: 'Moti Dholdungri Primary school', district: 'Valsad', taluka: 'Dharampur' },
   { id: 'tt_g1_f4', group: 'G.1', trade: 'Ag', teacherName: 'Sumanti', dayOfWeek: 'Friday', schoolName: 'Khatana Primary school', district: 'Valsad', taluka: 'Dharampur' },
 
-  // ==================== G2 (Ecco 2) ====================
+  // ==================== G2 ====================
   // Monday
-  { id: 'tt_g2_m1', group: 'G.2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Monday', schoolName: 'Navinagri Primary', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_m2', group: 'G.2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Monday', schoolName: 'Malanpada Primary school, Dasherapati', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_m3', group: 'G.2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Monday', schoolName: 'Baroliya Mukhya shala', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_m4', group: 'G.2', trade: 'Ag', teacherName: 'Anjali', dayOfWeek: 'Monday', schoolName: 'Ozarpada Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_m1', group: 'G2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Monday', schoolName: 'Navinagri Primary', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_m2', group: 'G2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Monday', schoolName: 'Malanpada Primary school, Dasherapati', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_m3', group: 'G2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Monday', schoolName: 'Baroliya Mukhya shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_m4', group: 'G2', trade: 'Ag', teacherName: 'Anjali', dayOfWeek: 'Monday', schoolName: 'Ozarpada Primary school', district: 'Valsad', taluka: 'Dharampur' },
   // Tuesday
-  { id: 'tt_g2_t1', group: 'G.2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Tuesday', schoolName: 'Vidyamandir sherimal', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_t2', group: 'G.2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Tuesday', schoolName: 'bheshdhara / pendha', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_t3', group: 'G.2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Tuesday', schoolName: 'Kharvel Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_t4', group: 'G.2', trade: 'Ag', teacherName: 'Anjali', dayOfWeek: 'Tuesday', schoolName: 'Patel faliya Baroliya', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_t1', group: 'G2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Tuesday', schoolName: 'Vidyamandir sherimal', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_t2', group: 'G2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Tuesday', schoolName: 'bheshdhara / pendha', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_t3', group: 'G2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Tuesday', schoolName: 'Kharvel Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_t4', group: 'G2', trade: 'Ag', teacherName: 'Anjali', dayOfWeek: 'Tuesday', schoolName: 'Patel faliya Baroliya', district: 'Valsad', taluka: 'Dharampur' },
   // Wednesday
-  { id: 'tt_g2_w1', group: 'G.2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Wednesday', schoolName: 'Ghogharpati Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_w2', group: 'G.2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Wednesday', schoolName: 'Ranpada Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_w3', group: 'G.2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Wednesday', schoolName: 'Rajmahal road Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_w1', group: 'G2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Wednesday', schoolName: 'Ghogharpati Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_w2', group: 'G2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Wednesday', schoolName: 'Ranpada Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_w3', group: 'G2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Wednesday', schoolName: 'Rajmahal road Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
   // Thursday
-  { id: 'tt_g2_th1', group: 'G.2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Thursday', schoolName: 'Naniba ashram shala', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_th2', group: 'G.2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Thursday', schoolName: 'Ambadalat Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_th3', group: 'G.2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Thursday', schoolName: 'Kamalzari primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_th4', group: 'G.2', trade: 'Ag', teacherName: 'Anjali', dayOfWeek: 'Thursday', schoolName: 'Kelipada primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_th1', group: 'G2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Thursday', schoolName: 'Naniba ashram shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_th2', group: 'G2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Thursday', schoolName: 'Ambadalat Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_th3', group: 'G2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Thursday', schoolName: 'Kamalzari primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_th4', group: 'G2', trade: 'Ag', teacherName: 'Anjali', dayOfWeek: 'Thursday', schoolName: 'Kelipada primary school', district: 'Valsad', taluka: 'Dharampur' },
   // Friday
-  { id: 'tt_g2_f1', group: 'G.2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Friday', schoolName: 'Dhamni Mukhya Shala', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_f2', group: 'G.2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Friday', schoolName: 'UMARMAAD VARG SHALA', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g2_f3', group: 'G.2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Friday', schoolName: 'Karanjveri Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_f1', group: 'G2', trade: 'Ex. HH', teacherName: 'Mital', dayOfWeek: 'Friday', schoolName: 'Dhamni Mukhya Shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_f2', group: 'G2', trade: 'TT (Tech)', teacherName: 'Mahendra', dayOfWeek: 'Friday', schoolName: 'UMARMAAD VARG SHALA', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g2_f3', group: 'G2', trade: 'MM', teacherName: 'Anjana', dayOfWeek: 'Friday', schoolName: 'Karanjveri Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
 
-  // ==================== G3 (Ecco 3) ====================
+  // ==================== G3 ====================
   // Monday
-  { id: 'tt_g3_m1', group: 'G.3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Monday', schoolName: 'Nilparn Ashram shala Khanda', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_m2', group: 'G.3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Monday', schoolName: 'ashram shala bhesdhara', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_m3', group: 'G.3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Monday', schoolName: 'Lakadmal Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_m4', group: 'G.3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Monday', schoolName: 'Bhavada Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_m1', group: 'G3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Monday', schoolName: 'Nilparn Ashram shala Khanda', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_m2', group: 'G3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Monday', schoolName: 'ashram shala bhesdhara', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_m3', group: 'G3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Monday', schoolName: 'Lakadmal Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_m4', group: 'G3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Monday', schoolName: 'Bhavada Primary school', district: 'Valsad', taluka: 'Dharampur' },
   // Tuesday
-  { id: 'tt_g3_t1', group: 'G.3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Tuesday', schoolName: 'Bamti Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_t2', group: 'G.3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Tuesday', schoolName: 'Kelavni Kendra shala', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_t3', group: 'G.3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Tuesday', schoolName: 'Ashram Shala Tamchhadi', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_t4', group: 'G.3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Tuesday', schoolName: 'Patel faliya Prathmik Shala Kelavni', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_t1', group: 'G3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Tuesday', schoolName: 'Bamti Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_t2', group: 'G3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Tuesday', schoolName: 'Kelavni Kendra shala', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_t3', group: 'G3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Tuesday', schoolName: 'Ashram Shala Tamchhadi', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_t4', group: 'G3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Tuesday', schoolName: 'Patel faliya Prathmik Shala Kelavni', district: 'Valsad', taluka: 'Dharampur' },
   // Wednesday
-  { id: 'tt_g3_w1', group: 'G.3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Wednesday', schoolName: 'Sidumbar Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_w3', group: 'G.3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Wednesday', schoolName: 'Asura primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_w4', group: 'G.3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Wednesday', schoolName: 'Kunkan faliya Primary school (Poonam)', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_w1', group: 'G3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Wednesday', schoolName: 'Sidumbar Primary school (2)', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_w3', group: 'G3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Wednesday', schoolName: 'Asura primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_w4', group: 'G3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Wednesday', schoolName: 'Kunkan faliya Primary school (Poonam)', district: 'Valsad', taluka: 'Dharampur' },
   // Thursday
-  { id: 'tt_g3_th1', group: 'G.3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Thursday', schoolName: 'Molaamba Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_th2', group: 'G.3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Thursday', schoolName: 'Khanpur primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_th3', group: 'G.3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Thursday', schoolName: 'Bopi Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_th4', group: 'G.3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Thursday', schoolName: 'Bapu Ashram shala Bopi', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_th1', group: 'G3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Thursday', schoolName: 'Molaamba Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_th2', group: 'G3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Thursday', schoolName: 'Khanpur primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_th3', group: 'G3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Thursday', schoolName: 'Bopi Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_th4', group: 'G3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Thursday', schoolName: 'Bapu Ashram shala Bopi', district: 'Valsad', taluka: 'Dharampur' },
   // Friday
-  { id: 'tt_g3_f1', group: 'G.3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Friday', schoolName: 'ASHRAMSHALA DHAMNI', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_f2', group: 'G.3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Friday', schoolName: 'BEJBHAVADA PRIMARY SCHOOL', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_f3', group: 'G.3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Friday', schoolName: 'Mendha Primary school', district: 'Valsad', taluka: 'Dharampur' },
-  { id: 'tt_g3_f4', group: 'G.3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Friday', schoolName: 'Kanya Ashram Shala Tanki', district: 'Valsad', taluka: 'Dharampur' }
+  { id: 'tt_g3_f1', group: 'G3', trade: 'Ex. HH', teacherName: 'Leelaben', dayOfWeek: 'Friday', schoolName: 'ASHRAMSHALA DHAMNI', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_f2', group: 'G3', trade: 'EE', teacherName: 'Divyesh', dayOfWeek: 'Friday', schoolName: 'BEJBHAVADA PRIMARY SCHOOL', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_f3', group: 'G3', trade: 'MM', teacherName: 'Vaishali', dayOfWeek: 'Friday', schoolName: 'Mendha Primary school', district: 'Valsad', taluka: 'Dharampur' },
+  { id: 'tt_g3_f4', group: 'G3', trade: 'Ag', teacherName: 'Manisha', dayOfWeek: 'Friday', schoolName: 'Kanya Ashram Shala Tanki', district: 'Valsad', taluka: 'Dharampur' }
 ];
 
 // Database Manager wrapper Class utilizing HTML5 localStorage
@@ -887,7 +887,7 @@ class OmpDatabase {
       ? JSON.parse(localStorage.getItem('omp_timetable')!) 
       : [];
     const hasOldFormat = existingTimetable.some((t: any) => t.id === 'tt1' || t.id === 'tt19');
-    const isOutdated = !existingTimetable.some((t: any) => t.teacherName === 'Krunal' && t.dayOfWeek === 'Friday' && t.schoolName === 'Maji Rajbaa Kanya shala dharampur');
+    const isOutdated = !existingTimetable.some((t: any) => t.group === 'G2');
     if (hasOldFormat || isOutdated || existingTimetable.length < 20) {
       localStorage.setItem('omp_timetable', JSON.stringify(SEED_TIMETABLE));
     } else {
