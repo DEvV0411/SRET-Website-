@@ -856,7 +856,7 @@ export const PreVocationalModule: React.FC = () => {
         <div className="space-y-6">
           
           {/* Trainer Day-Wise Weekly Schedule Checklist */}
-          {isTrainerRole && (
+          {(isTrainerRole || currentUser?.role === 'super_admin' || currentUser?.role === 'programme_coordinator') && (
             <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 p-5 rounded-lg shadow-sm space-y-4">
               <div className="flex justify-between items-start">
                 <div>
