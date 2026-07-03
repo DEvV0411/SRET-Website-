@@ -132,58 +132,102 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (isFirebaseConfigured && auth && firestoreDb) {
       try {
+        // 1. Try direct Firebase Auth sign-in first (fast-path for already registered users)
+        await signInWithEmailAndPassword(auth, email, password);
+
+        // 2. Fetch the Firestore metadata document
         const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
-        let userProfile: User | null = null;
+        let userProfile: User;
 
         if (userDoc.exists()) {
           userProfile = userDoc.data() as User;
+          // Synchronize stored password with current login password
+          if (userProfile.password !== password) {
+            userProfile.password = password;
+          }
         } else {
-          userProfile = db.getUsers().find(u => u.username === cleanUsername) || null;
+          const seedUser = db.getUsers().find(u => u.username === cleanUsername);
+          userProfile = seedUser || {
+            username: cleanUsername,
+            name: cleanUsername.replace(/\./g, ' '),
+            role: 'trainer',
+            assignedProgramme: 'All',
+            assignedSchools: [],
+            assignedDistricts: ['All'],
+            isActive: true,
+            permissions: ['View Students', 'View Attendance'],
+            activityLogs: []
+          };
+          userProfile.password = password;
         }
 
-        if (userProfile) {
-          const targetPassword = userProfile.password || 'password123';
-          
-          if (password === targetPassword) {
+        const updatedUser = {
+          ...userProfile,
+          lastLogin: new Date().toISOString()
+        };
+
+        await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
+        setCurrentUser(updatedUser);
+        if (rememberMe) {
+          localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
+        }
+        return true;
+      } catch (authError: any) {
+        console.warn('[Firebase Auth] Direct sign-in failed, checking database registry fallback:', authError.code);
+
+        // 3. Fallback: Verify entered credentials against synchronized database profile
+        const localUser = db.getUsers().find(u => u.username === cleanUsername);
+        const targetPassword = localUser?.password || 'password123';
+
+        if (password === targetPassword) {
+          // If valid, auto-register them in Firebase Auth if not enrolled yet
+          if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/cannot-find-user') {
             try {
-              await signInWithEmailAndPassword(auth, email, password);
-            } catch (authError: any) {
-              if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/cannot-find-user') {
-                try {
-                  console.log('[Firebase Auth] Auto-registering user credentials:', email);
-                  await createUserWithEmailAndPassword(auth, email, password);
-                } catch (regErr) {
-                  console.error('[Firebase Auth] Auto-registration failed:', regErr);
-                }
-              }
+              console.log('[Firebase Auth] Auto-registering credentials:', email);
+              await createUserWithEmailAndPassword(auth, email, password);
+            } catch (regErr) {
+              console.warn('[Firebase Auth] Auto-registration skipped (likely already registered in Auth):', regErr);
             }
+          }
 
-            const updatedUser = {
-              ...userProfile,
-              lastLogin: new Date().toISOString()
-            };
+          let userProfile = localUser;
+          try {
+            // Attempt to retrieve current Cloud document state
+            const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
+            if (userDoc.exists()) {
+              userProfile = userDoc.data() as User;
+            }
+          } catch (firestoreErr) {
+            console.warn('[Firebase Auth] Cloud fetch blocked, using cached state:', firestoreErr);
+          }
 
+          const updatedUser = {
+            ...(userProfile || {
+              username: cleanUsername,
+              name: cleanUsername.replace(/\./g, ' '),
+              role: 'trainer' as const,
+              assignedProgramme: 'All' as const,
+              assignedSchools: [],
+              assignedDistricts: ['All'],
+              isActive: true,
+              permissions: ['View Students', 'View Attendance'],
+              activityLogs: []
+            }),
+            password,
+            lastLogin: new Date().toISOString()
+          };
+
+          try {
             await setDoc(doc(firestoreDb, 'users', cleanUsername), updatedUser);
-            setCurrentUser(updatedUser);
-            if (rememberMe) {
-              localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
-            }
-            return true;
+          } catch (writeErr) {
+            console.warn('[Firebase Auth] Cloud sync write blocked, caching locally:', writeErr);
           }
-        }
-        return false;
-      } catch (err) {
-        console.warn('[Firebase Auth] Firestore bypass failed, signing in directly:', err);
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-          const userDoc = await getDoc(doc(firestoreDb, 'users', cleanUsername));
-          if (userDoc.exists()) {
-            const userProfile = userDoc.data() as User;
-            setCurrentUser(userProfile);
-            return true;
+
+          setCurrentUser(updatedUser);
+          if (rememberMe) {
+            localStorage.setItem('omp_session_user', JSON.stringify(updatedUser));
           }
-        } catch (directErr) {
-          console.error('[Firebase Auth] Direct sign-in failed:', directErr);
+          return true;
         }
         return false;
       }
