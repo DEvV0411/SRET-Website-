@@ -118,6 +118,151 @@ const SEED_USERS: User[] = [
       'View Students', 'View Attendance', 'View Reports'
     ],
     activityLogs: []
+  },
+  // ==================== Pre-Vocational Teachers ====================
+  {
+    username: 'trainer.krunal',
+    name: 'Krunal (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'krunalpass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.jinal',
+    name: 'Jinal (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'jinalpass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.sunita',
+    name: 'Sunita (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'sunitapass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.sumanti',
+    name: 'Sumanti (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'sumantipass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.mital',
+    name: 'Mital (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'mitalpass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.mahendra',
+    name: 'Mahendra (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'mahendrapass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.anjana',
+    name: 'Anjana (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'anjanapass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.anjali',
+    name: 'Anjali (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'anjalipass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.leelaben',
+    name: 'Leelaben (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'leelabenpass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.divyesh',
+    name: 'Divyesh (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'divyeshpass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.vaishali',
+    name: 'Vaishali (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'vaishalipass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.manisha',
+    name: 'Manisha (Pre-Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Pre-Vocational',
+    assignedSchools: [],
+    assignedDistricts: ['Valsad'],
+    isActive: true,
+    password: 'manishapass123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
   }
 ];
 
@@ -420,20 +565,6 @@ const SEED_SESSIONS: Session[] = [
     attendanceAbsent: [],
     remarks: 'Students engaged well in field survey simulation. Excellent results.',
     locationCoords: { lat: 22.2534, lng: 72.1983 }
-  },
-  {
-    id: 'SES203',
-    programme: 'Pre-Vocational',
-    schoolCode: 'S102',
-    date: new Date(Date.now() - 172800000).toISOString().split('T')[0], // 2 days ago
-    time: '10:00 AM',
-    trainerUsername: 'trainer.rahul',
-    subject: 'Intro to Hand Tools',
-    lessonPlanId: 'LP303',
-    status: 'Missed',
-    attendancePresent: [],
-    attendanceAbsent: ['STU002', 'STU005'],
-    remarks: 'Trainer delayed due to local transport strike. Session to be rescheduled.'
   }
 ];
 
@@ -691,9 +822,21 @@ class OmpDatabase {
   }
 
   private initDatabase() {
-    if (!localStorage.getItem('omp_users')) {
-      localStorage.setItem('omp_users', JSON.stringify(SEED_USERS));
-    }
+    const existingUsers = localStorage.getItem('omp_users') 
+      ? JSON.parse(localStorage.getItem('omp_users')!) 
+      : [];
+    const mergedUsers = [...existingUsers];
+    SEED_USERS.forEach(seedUsr => {
+      const matchIndex = mergedUsers.findIndex((u: any) => u.username === seedUsr.username);
+      if (matchIndex === -1) {
+        mergedUsers.push(seedUsr);
+      } else {
+        if (!mergedUsers[matchIndex].password && seedUsr.password) {
+          mergedUsers[matchIndex].password = seedUsr.password;
+        }
+      }
+    });
+    localStorage.setItem('omp_users', JSON.stringify(mergedUsers));
     
     // Always merge schools to ensure all 71 Pre-Vocational schools are registered
     const existingSchools = localStorage.getItem('omp_schools') 
@@ -712,6 +855,13 @@ class OmpDatabase {
     }
     if (!localStorage.getItem('omp_sessions')) {
       localStorage.setItem('omp_sessions', JSON.stringify(SEED_SESSIONS));
+    } else {
+      let currentSessions = JSON.parse(localStorage.getItem('omp_sessions')!);
+      const originalLength = currentSessions.length;
+      currentSessions = currentSessions.filter((s: any) => s.id !== 'SES203' && !s.id.startsWith('PV_SES_'));
+      if (currentSessions.length !== originalLength) {
+        localStorage.setItem('omp_sessions', JSON.stringify(currentSessions));
+      }
     }
     if (!localStorage.getItem('omp_lesson_plans')) {
       localStorage.setItem('omp_lesson_plans', JSON.stringify(SEED_LESSON_PLANS));

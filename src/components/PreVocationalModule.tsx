@@ -767,9 +767,156 @@ export const PreVocationalModule: React.FC = () => {
             </div>
           </div>
 
+          {/* Visual Week-Wise Allotment Spreadsheet Matrix */}
+          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-lg shadow-sm p-6 space-y-4 mb-6 overflow-hidden">
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="text-[10px] bg-secondary/20 text-secondary font-bold px-2 py-0.5 rounded uppercase">Master Grid View</span>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5 font-heading">Official Timetable Matrix</h3>
+                <p className="text-xs text-slate-500 mt-1">Direct representation of SRET Pre-Vocational weekly trade and teacher block allotments.</p>
+              </div>
+              <span className="text-xs bg-green-550/15 text-green-600 px-3 py-1 rounded-full font-bold">Dharampur Block Cluster</span>
+            </div>
+
+            <div className="overflow-x-auto border border-slate-200 dark:border-dark-border rounded">
+              <table className="w-full text-left text-[11px] font-semibold border-collapse">
+                <thead>
+                  <tr className="bg-slate-900 text-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border text-center">
+                    <th className="p-3 border-r border-slate-800 font-bold">Group</th>
+                    <th className="p-3 border-r border-slate-800 font-bold text-left">Trade</th>
+                    <th className="p-3 border-r border-slate-800 font-bold text-left">Teacher</th>
+                    <th className="p-3 border-r border-slate-800 font-bold text-left">Mon</th>
+                    <th className="p-3 border-r border-slate-800 font-bold text-left">Tue</th>
+                    <th className="p-3 border-r border-slate-800 font-bold text-left">Wed</th>
+                    <th className="p-3 border-r border-slate-800 font-bold text-left">Thur</th>
+                    <th className="p-3 font-bold text-left">Fri</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-dark-border text-slate-700 dark:text-slate-300">
+                  {/* G1 */}
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-center align-middle bg-slate-50/50 dark:bg-dark-card/25" rowSpan={4}>G.1</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">Ex. HH</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Krunal</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Khanda Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">SRVV Tamchhadi</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border text-slate-400 font-medium italic">-</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">chondha Primary school</td>
+                    <td className="p-3">Maji Rajbaa Kanya shala dharampur</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">TT (Tech)</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Jinal</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Sawarmal Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Tamchhadi Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Barumal primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Luheri Primary school</td>
+                    <td className="p-3 font-bold text-slate-900 dark:text-white">Ashram Shala Asura</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">MM</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Sunita</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kangvi Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Besfaliya bilpudi Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kanurbarda Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Ananad ashram Shala chondha</td>
+                    <td className="p-3">Moti Dholdungri Primary school</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">Ag</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Sumanti</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Karanjveri Patel faliya</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Primary school Dungarpada</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Avdha Primary school (2)</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Jagiri faliya Primary school Bartad</td>
+                    <td className="p-3">Khatana Primary school</td>
+                  </tr>
+
+                  {/* G2 */}
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 border-t border-slate-300">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-center align-middle bg-slate-50/50 dark:bg-dark-card/25" rowSpan={4}>G.2</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">Ex. HH</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Mital</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Navinagri Primary</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Vidyamandir sherimal</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Ghogharpati Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Naniba ashram shala</td>
+                    <td className="p-3">Dhamni Mukhya Shala</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">TT (Tech)</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Mahendra</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Malanpada Primary school, Dasherapati</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border bg-amber-500/10 dark:bg-amber-500/5 font-extrabold text-slate-900 dark:text-white">bheshdhara / pendha</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Ranpada Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Ambadalat Primary school</td>
+                    <td className="p-3">UMARMAAD VARG SHALA</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">MM</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Anjana</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Baroliya Mukhya shala</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kharvel Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Rajmahal road Primary school (2)</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kamalzari primary school</td>
+                    <td className="p-3">Karanjveri Primary school (2)</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">Ag</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Anjali</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Ozarpada Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Patel faliya Baroliya</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border text-slate-400 font-medium italic">-</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kelipada primary school</td>
+                    <td className="p-3 text-slate-400 font-medium italic">-</td>
+                  </tr>
+
+                  {/* G3 */}
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 border-t border-slate-300">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-center align-middle bg-slate-50/50 dark:bg-dark-card/25" rowSpan={4}>G.3</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">Ex. HH</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Leelaben</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Nilparn Ashram shala Khanda</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Bamti Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Sidumbar Primary school (2)</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Molaamba Primary school</td>
+                    <td className="p-3">ASHRAMSHALA DHAMNI</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">EE</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Divyesh</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">ahsram shala bhesdhara</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kelavni Kendra shala</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border text-slate-400 font-medium italic">-</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Khanpur primary school</td>
+                    <td className="p-3">BEJBHAVADA PRIMARY SCHOOL</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">MM</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Vaishali</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Lakadmal Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Ashram Shala Tamchhadi</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Asura primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Bopi Primary school</td>
+                    <td className="p-3">Mendha Primary school</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-500">Ag</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border font-bold text-slate-900 dark:text-white">Manisha</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Bhavada Primary school</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Patel faliya Prathmik Shala Kelavni</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Kunkan faliya Primary school (Poonam)</td>
+                    <td className="p-3 border-r border-slate-200 dark:border-dark-border">Bapu Ashram shala Bopi</td>
+                    <td className="p-3 bg-amber-500/10 dark:bg-amber-500/5 font-extrabold text-slate-900 dark:text-white text-center">Kanya Ashram Shala Tanki</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Timetable schedule grid list */}
           <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-md shadow-sm overflow-hidden">
-            <div className="px-5 py-4 bg-slate-50 dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-300">
+            <div className="px-5 py-4 bg-slate-50 dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-350">
               <span>Schedules Database ({filteredSchedule.length} Allotments)</span>
               <span className="text-[10px] text-slate-400 uppercase font-mono">Dharampur Block</span>
             </div>
