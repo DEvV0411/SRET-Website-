@@ -44,6 +44,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     // If super admin, has access to all
     if (currentUser.role === 'super_admin') return true;
     
+    // If trainer, restrict strictly to Dashboard and Pre Vocational
+    if (currentUser.role === 'trainer') {
+      return item.id === 'dashboard' || item.id === 'pre_vocational';
+    }
+    
     // Check permission gating
     if (item.permission && !hasPermission(item.permission)) return false;
     
@@ -62,6 +67,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'reports', icon: FileText, label: 'Reports', permission: 'View Reports' },
   ].filter(item => {
     if (currentUser.role === 'super_admin') return true;
+    if (currentUser.role === 'trainer') {
+      return item.id === 'dashboard';
+    }
     if (item.permission && !hasPermission(item.permission)) return false;
     return true;
   });

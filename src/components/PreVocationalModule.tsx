@@ -131,6 +131,25 @@ export const PreVocationalModule: React.FC = () => {
     e.preventDefault();
     if (!activeTrainerSession || !currentUser) return;
 
+    if (!trainerRemarks.trim()) {
+      window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+        detail: 'Error: Session Remarks & Observations are compulsory!' 
+      }));
+      return;
+    }
+    if (!issuesFaced.trim()) {
+      window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+        detail: 'Error: Issues Faced field is compulsory! Enter None if there are no issues.' 
+      }));
+      return;
+    }
+    if (!photoBlob) {
+      window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+        detail: 'Error: Classroom Verification Photo is compulsory! Please capture/simulate a photo.' 
+      }));
+      return;
+    }
+
     const previous = JSON.stringify(activeTrainerSession);
     const updated: Session = {
       ...activeTrainerSession,
@@ -191,7 +210,7 @@ export const PreVocationalModule: React.FC = () => {
 
     const entryToSave: TimetableEntry = {
       id: 'tt_' + Math.floor(60 + Math.random() * 999),
-      group: newEntry.group || 'Ecco 1',
+      group: newEntry.group || 'G.1',
       teacherName: newEntry.teacherName,
       dayOfWeek: newEntry.dayOfWeek as any,
       schoolName: newEntry.schoolName,
@@ -205,7 +224,7 @@ export const PreVocationalModule: React.FC = () => {
     
     // Reset
     setNewEntry({
-      group: 'Ecco 1',
+      group: 'G.1',
       teacherName: '',
       dayOfWeek: 'Monday',
       schoolName: '',
@@ -585,7 +604,7 @@ export const PreVocationalModule: React.FC = () => {
                 
                 <div className="p-4 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs text-slate-500 leading-relaxed font-semibold">
                   <span className="font-bold block text-slate-700 dark:text-slate-350 uppercase text-[10px] tracking-wide mb-1">Allotment Rule Format:</span>
-                  <span>Spreadsheets must map columns in order: <span className="font-mono text-primary">Group, Teacher, Monday, Tuesday, Wednesday, Thursday, Friday</span>. Rows represent Ecco allotment groupings.</span>
+                  <span>Spreadsheets must map columns in order: <span className="font-mono text-primary">Group, Teacher, Monday, Tuesday, Wednesday, Thursday, Friday</span>. Rows represent Group allotment groupings.</span>
                 </div>
               </div>
             )}
@@ -601,9 +620,9 @@ export const PreVocationalModule: React.FC = () => {
                   onChange={(e) => setNewEntry({ ...newEntry, group: e.target.value })}
                   className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white font-bold"
                 >
-                  <option value="Ecco 1">Ecco 1</option>
-                  <option value="Ecco 2">Ecco 2</option>
-                  <option value="Ecco 3">Ecco 3</option>
+                  <option value="G.1">G.1</option>
+                  <option value="G.2">G.2</option>
+                  <option value="G.3">G.3</option>
                 </select>
               </div>
 
@@ -954,16 +973,16 @@ export const PreVocationalModule: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <span className="text-[10px] bg-primary/20 text-primary font-bold px-2 py-0.5 rounded uppercase">Trainer Action Center</span>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">My Day-Wise Weekly Schedule</h3>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">My Allotted Class (Today)</h3>
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-mono text-slate-505 font-bold block">Current Day: {currentWeekday}</span>
-                  <span className="text-[10px] text-slate-400">Select any day's allotted class to report execution</span>
+                  <span className="text-[10px] text-slate-400 font-semibold">Select today's class to report execution</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-2 text-xs">
-                {dayOptions.map(day => {
+              <div className="grid grid-cols-1 max-w-sm gap-4 pt-2 text-xs">
+                {[currentWeekday].map(day => {
                   const allotment = timetable.find(t => t.teacherName === trainerName && t.dayOfWeek === day);
                   
                   if (!allotment) {
@@ -1004,7 +1023,7 @@ export const PreVocationalModule: React.FC = () => {
                         <span className="font-extrabold text-slate-900 dark:text-white block truncate text-[11px]" title={allotment.schoolName}>
                           {allotment.schoolName}
                         </span>
-                        <span className="text-[10px] text-slate-450 block mt-0.5">Ecco Group: {allotment.group}</span>
+                        <span className="text-[10px] text-slate-450 block mt-0.5">Group: {allotment.group}</span>
                       </div>
 
                       <div className="mt-3.5">
@@ -1236,7 +1255,7 @@ export const PreVocationalModule: React.FC = () => {
 
               {/* Present count */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Number of Students Present</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Number of Students Present * <span className="text-red-500">(Compulsory)</span></label>
                 <input
                   type="number"
                   required
@@ -1249,22 +1268,24 @@ export const PreVocationalModule: React.FC = () => {
 
               {/* Observations Remarks */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Session Remarks & Observations</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Session Remarks & Observations * <span className="text-red-500">(Compulsory)</span></label>
                 <textarea
                   rows={2}
+                  required
                   value={trainerRemarks}
                   onChange={(e) => setTrainerRemarks(e.target.value)}
-                  placeholder="Enter lesson observations, materials used, etc."
+                  placeholder="Enter lesson observations, materials used, etc. (Required)"
                   className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white font-medium"
                 />
               </div>
 
               {/* Issues faced */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Issues Faced (Optional)</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Issues Faced / Challenges * <span className="text-red-500">(Compulsory - write None if none)</span></label>
                 <input
                   type="text"
-                  placeholder="e.g. smartboard malfunction, power fluctions"
+                  required
+                  placeholder="smartboard malfunction, power fluctuations, or enter None (Required)"
                   value={issuesFaced}
                   onChange={(e) => setIssuesFaced(e.target.value)}
                   className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white"
@@ -1273,7 +1294,7 @@ export const PreVocationalModule: React.FC = () => {
 
               {/* Camera photo simulator */}
               <div>
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Classroom Verification Photo</span>
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Classroom Verification Photo * <span className="text-red-500">(Compulsory)</span></span>
                 {photoBlob ? (
                   <div className="relative rounded overflow-hidden border border-slate-205 max-w-[140px] mx-auto">
                     <img src={photoBlob} alt="Simulated capture preview" className="w-full h-24 object-cover" />
