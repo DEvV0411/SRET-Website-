@@ -988,9 +988,18 @@ export const PreVocationalModule: React.FC = () => {
                     );
                   }
 
-                  const schoolObj = db.getSchools().find(s => s.name === allotment.schoolName);
-                  const schoolCode = schoolObj ? schoolObj.code : 'S102';
-                  const reportedSession = sessions.find(s => s.schoolCode === schoolCode && s.date === new Date().toISOString().split('T')[0]);
+                  const cleanName = allotment.schoolName.trim().toLowerCase();
+                  const schoolObj = db.getSchools().find(
+                    s => s.name.trim().toLowerCase() === cleanName ||
+                         s.name.toLowerCase().includes(cleanName) ||
+                         cleanName.includes(s.name.toLowerCase())
+                  );
+                  const schoolCode = schoolObj ? schoolObj.code : `S_PV_${allotment.id}`;
+                  const reportedSession = sessions.find(
+                    s => s.schoolCode === schoolCode && 
+                         s.date === new Date().toISOString().split('T')[0] &&
+                         (s.trainerUsername === currentUser.username || s.conductedBy === currentUser.name)
+                  );
 
                   return (
                     <div key={day} className={`p-3 rounded border flex flex-col justify-between ${
