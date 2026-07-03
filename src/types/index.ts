@@ -134,6 +134,7 @@ export interface TimetableEntry {
   id: string;
   group: string;
   teacherName: string;
+  trade?: string;
   dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
   schoolName: string;
   schoolCode?: string;
