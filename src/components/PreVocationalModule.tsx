@@ -75,31 +75,8 @@ export const PreVocationalModule: React.FC = () => {
   const loadData = () => {
     setTimetable(db.getTimetable());
     
-    // Auto-create or load Pre-Vocational specific sessions
-    let rawSessions = db.getSessions().filter(s => s.programme === 'Pre-Vocational');
-    
-    // If no Pre-Vocational sessions exist, let's auto-generate a couple of demo sessions from the pre-seeded timetable!
-    if (rawSessions.length === 0) {
-      const schedule = db.getTimetable();
-      const generated: Session[] = schedule.slice(0, 5).map((entry, idx) => ({
-        id: `PV_SES_${100 + idx}`,
-        programme: 'Pre-Vocational',
-        schoolCode: 'S102', // Limdi / Pre-Voc
-        date: new Date(Date.now() - idx * 86400000).toISOString().split('T')[0],
-        time: '10:00 AM',
-        trainerUsername: entry.teacherName.toLowerCase() === 'sunita' ? 'trainer.rahul' : 'trainer.john',
-        subject: 'Intro to Safety and Hand Tools',
-        lessonPlanId: 'LP303',
-        status: idx === 0 ? 'Scheduled' : idx === 1 ? 'Conducted' : 'Completed',
-        attendancePresent: [],
-        attendanceAbsent: [],
-        groupName: entry.group
-      }));
-      
-      // Save them in DB to initialize
-      generated.forEach(s => db.saveSession(s));
-      rawSessions = generated;
-    }
+    // Load Pre-Vocational specific sessions (no dummy generation)
+    const rawSessions = db.getSessions().filter(s => s.programme === 'Pre-Vocational');
     setSessions(rawSessions);
     setAuditLogs(db.getAuditLogs());
   };
@@ -410,7 +387,7 @@ export const PreVocationalModule: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Students</span>
               <div className="flex items-center gap-2 mt-2">
                 <Users size={16} className="text-primary shrink-0" />
-                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">{totalStudents || 85}</span>
+                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">{totalStudents}</span>
               </div>
             </div>
 
@@ -418,7 +395,7 @@ export const PreVocationalModule: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Schools</span>
               <div className="flex items-center gap-2 mt-2">
                 <SchoolIcon size={16} className="text-secondary shrink-0" />
-                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">{totalSchools || 12}</span>
+                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">{totalSchools}</span>
               </div>
             </div>
 
@@ -426,7 +403,7 @@ export const PreVocationalModule: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pre-Voc Teachers</span>
               <div className="flex items-center gap-2 mt-2">
                 <Users size={16} className="text-accent shrink-0" />
-                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">{totalTeachers || 12}</span>
+                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">{totalTeachers}</span>
               </div>
             </div>
 
@@ -448,73 +425,56 @@ export const PreVocationalModule: React.FC = () => {
 
           </div>
 
-          {/* Core chart layouts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Weekly Progress HTML SVG chart */}
-            <div className="lg:col-span-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-5 rounded-md shadow-sm space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Weekly Progress Allotment</h3>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Ecco Clusters</span>
-              </div>
-
-              {/* Progress columns list representing Ecco 1, Ecco 2, Ecco 3 */}
-              <div className="relative h-44 flex items-end justify-around border-b border-slate-200 dark:border-dark-border pb-1">
-                <div className="flex flex-col items-center flex-1 group">
-                  <div className="text-[10px] text-slate-800 dark:text-white font-bold mb-1">18/22</div>
-                  <div className="w-14 bg-gradient-to-t from-primary/70 to-primary rounded-t h-32" />
-                  <span className="text-[10px] font-semibold mt-2 text-slate-500">Ecco 1 Group</span>
-                </div>
-                <div className="flex flex-col items-center flex-1 group">
-                  <div className="text-[10px] text-slate-800 dark:text-white font-bold mb-1">15/20</div>
-                  <div className="w-14 bg-gradient-to-t from-secondary/70 to-secondary rounded-t h-24" />
-                  <span className="text-[10px] font-semibold mt-2 text-slate-500">Ecco 2 Group</span>
-                </div>
-                <div className="flex flex-col items-center flex-1 group">
-                  <div className="text-[10px] text-slate-800 dark:text-white font-bold mb-1">19/20</div>
-                  <div className="w-14 bg-gradient-to-t from-accent/70 to-accent rounded-t h-36" />
-                  <span className="text-[10px] font-semibold mt-2 text-slate-500">Ecco 3 Group</span>
-                </div>
-              </div>
+          {/* Real data list of reported sessions */}
+          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-5 rounded-md shadow-sm space-y-4">
+            <div className="flex justify-between items-center pb-2.5 border-b border-slate-105 dark:border-dark-border">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Live Session Status Registry</h3>
+              <span className="text-[10px] text-slate-450 font-bold uppercase">{sessions.length} Sessions Logged</span>
             </div>
 
-            {/* School Coverage Trackers list */}
-            <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-5 rounded-md shadow-sm space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">School Coverage Target</h3>
-              
-              <div className="space-y-3.5">
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-slate-800 dark:text-white">Kanya Ashram Shala Tanki</span>
-                    <span className="text-slate-400">80%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full rounded-full" style={{ width: '80%' }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-slate-800 dark:text-white">Khanda Primary school</span>
-                    <span className="text-slate-400">65%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div className="bg-amber-500 h-full rounded-full" style={{ width: '65%' }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-slate-800 dark:text-white">SRVV Tamchhadi</span>
-                    <span className="text-slate-400">95%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full rounded-full" style={{ width: '95%' }} />
-                  </div>
-                </div>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[11px] font-semibold border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-dark-card border-b border-slate-200 dark:border-dark-border text-slate-500">
+                    <th className="p-2.5">School Code</th>
+                    <th className="p-2.5">Date</th>
+                    <th className="p-2.5">Trainer</th>
+                    <th className="p-2.5">Lesson Plan</th>
+                    <th className="p-2.5">Attendance</th>
+                    <th className="p-2.5 text-right">Workflow Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-dark-border text-slate-700 dark:text-slate-350">
+                  {sessions.slice(0, 10).map(sess => (
+                    <tr key={sess.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                      <td className="p-2.5 font-bold text-slate-900 dark:text-white">{sess.schoolCode}</td>
+                      <td className="p-2.5 font-semibold text-slate-400">{sess.date}</td>
+                      <td className="p-2.5 font-bold text-slate-900 dark:text-white">{sess.conductedBy || sess.trainerUsername}</td>
+                      <td className="p-2.5 text-primary font-bold">{sess.lessonPlanId || 'LP'}</td>
+                      <td className="p-2.5">{sess.studentsPresentCount !== undefined ? `${sess.studentsPresentCount} present` : 'Pending'}</td>
+                      <td className="p-2.5 text-right">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold capitalize ${
+                          sess.status === 'Completed'
+                            ? 'bg-green-500/10 text-green-500'
+                            : sess.status === 'Verified'
+                            ? 'bg-blue-500/10 text-blue-550'
+                            : sess.status === 'Conducted'
+                            ? 'bg-amber-500/10 text-accent font-bold animate-pulse'
+                            : 'bg-primary/10 text-primary'
+                        }`}>
+                          {sess.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {sessions.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-500 font-medium">No Pre-Vocational classes reported yet. Report execution via Sessions Action Center to view live logs.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-
           </div>
 
           {/* Bottom Alert alerts widgets */}
@@ -552,20 +512,19 @@ export const PreVocationalModule: React.FC = () => {
                   <thead>
                     <tr className="bg-slate-50 dark:bg-dark-card border-b border-slate-200 dark:border-dark-border text-slate-500">
                       <th className="p-2.5">Teacher Name</th>
-                      <th className="p-2.5">Sessions Conducted</th>
-                      <th className="p-2.5 text-right">Target Met</th>
+                      <th className="p-2.5 text-right">Sessions Conducted</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-dark-border text-slate-700 dark:text-slate-350">
-                    {teacherOptions.slice(0, 4).map(teacher => (
-                      <tr key={teacher} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
-                        <td className="p-2.5 font-bold text-slate-900 dark:text-white">{teacher}</td>
-                        <td className="p-2.5">
-                          {sessions.filter(s => s.conductedBy?.includes(teacher) || s.trainerUsername === teacher.toLowerCase()).length} Conducted
-                        </td>
-                        <td className="p-2.5 text-right text-green-500 font-bold">100%</td>
-                      </tr>
-                    ))}
+                    {teacherOptions.map(teacher => {
+                      const conductedCount = sessions.filter(s => s.conductedBy?.includes(teacher) || s.trainerUsername === teacher.toLowerCase()).length;
+                      return (
+                        <tr key={teacher} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                          <td className="p-2.5 font-bold text-slate-900 dark:text-white">{teacher}</td>
+                          <td className="p-2.5 text-right font-bold text-primary">{conductedCount} Classes</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -856,7 +815,7 @@ export const PreVocationalModule: React.FC = () => {
         <div className="space-y-6">
           
           {/* Trainer Day-Wise Weekly Schedule Checklist */}
-          {(isTrainerRole || currentUser?.role === 'super_admin' || currentUser?.role === 'programme_coordinator') && (
+          {isTrainerRole && (
             <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 p-5 rounded-lg shadow-sm space-y-4">
               <div className="flex justify-between items-start">
                 <div>
