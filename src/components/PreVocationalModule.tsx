@@ -1419,6 +1419,7 @@ export const PreVocationalModule: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
       {/* Lightbox modal overlay */}
       {activePhotoUrl && (
         <div 
