@@ -105,13 +105,24 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
 
     // 4. Get Timetable allotments
     const allTimetable = db.getTimetable();
+    const allUsers = db.getUsers();
     // Filter allotments where the school runs this programme
     let verticalAllotment = allTimetable.filter(t => {
-      const sch = allSchools.find(s => s.name === t.schoolName);
-      return sch && sch.runningProgrammes.includes(programme);
+      const sch = allSchools.find(s => s.name.toLowerCase().trim() === t.schoolName.toLowerCase().trim());
+      if (sch) {
+        return sch.runningProgrammes.includes(programme);
+      }
+      // Fallback: Check if teacher name matches a user assigned to this programme
+      const teacher = allUsers.find(u => u.name.toLowerCase().includes(t.teacherName.toLowerCase()));
+      if (teacher) {
+        return teacher.assignedProgramme === programme || teacher.assignedProgramme === 'All';
+      }
+      return false;
     });
     if (currentUser?.role === 'trainer') {
-      verticalAllotment = verticalAllotment.filter(t => t.teacherName === currentUser.name);
+      verticalAllotment = verticalAllotment.filter(t => 
+        currentUser.name.toLowerCase().includes(t.teacherName.toLowerCase())
+      );
     }
     setTimetable(verticalAllotment);
 
@@ -120,7 +131,6 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
     setInventory(allInventory);
 
     // 6. Get Trainers assigned to this vertical
-    const allUsers = db.getUsers();
     const verticalTrainers = allUsers.filter(u => u.role === 'trainer' && (u.assignedProgramme === programme || u.assignedProgramme === 'All'));
     setTrainers(verticalTrainers);
   };
