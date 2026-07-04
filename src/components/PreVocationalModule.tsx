@@ -6,7 +6,7 @@ import {
   Database, Calendar, Users, School as SchoolIcon, Play, 
   CheckCircle, ShieldCheck, ClipboardCheck, ArrowUpRight, 
   Search, Upload, Plus, FileSpreadsheet, AlertCircle, RefreshCw, 
-  Trash, Eye, Bell, Lock, Camera 
+  Trash, Eye, Bell, Lock, Camera, X
 } from 'lucide-react';
 
 export const PreVocationalModule: React.FC = () => {
@@ -280,13 +280,45 @@ export const PreVocationalModule: React.FC = () => {
     }, 150);
   };
 
-  // Handle actual photo file upload or camera capture
+  // Handle actual photo file upload or camera capture with client-side image compression
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoBlob(reader.result as string);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize image: cap max dimension at 800px
+        const MAX_DIM = 800;
+        if (width > height) {
+          if (width > MAX_DIM) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          }
+        } else {
+          if (height > MAX_DIM) {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // Compress to JPEG with 0.6 quality (60%)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          setPhotoBlob(compressedBase64);
+        }
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -1237,9 +1269,11 @@ export const PreVocationalModule: React.FC = () => {
           <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border w-full max-w-[450px] rounded-lg shadow-xl p-6 relative animate-fadeIn text-slate-800 dark:text-slate-100">
             <button 
               onClick={() => setShowConductedModal(false)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white text-xs font-bold"
+              className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-full transition-colors shadow-sm"
+              aria-label="Close modal"
+              type="button"
             >
-              Close
+              <X size={14} />
             </button>
 
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-1.5">Class Conducted Report</h3>
@@ -1247,7 +1281,7 @@ export const PreVocationalModule: React.FC = () => {
 
             <form onSubmit={handleTrainerConductedSubmit} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-350">
               
-              <div className="grid grid-cols-2 gap-3 text-[11px] p-3 bg-slate-50 dark:bg-dark-card rounded border border-slate-200 dark:border-dark-border">
+              <div className="grid grid-cols-2 gap-3 text-[11px] p-3 bg-slate-50 dark:bg-dark-card rounded border border-slate-300 dark:border-slate-650">
                 <div>
                   <span className="text-slate-400 block font-semibold">Teacher:</span>
                   <span className="text-slate-900 dark:text-white font-bold">{currentUser?.name}</span>
@@ -1272,7 +1306,7 @@ export const PreVocationalModule: React.FC = () => {
                 <select
                   value={selectedLPSession}
                   onChange={(e) => setSelectedLPSession(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white font-bold font-heading"
+                  className="w-full px-2.5 py-1.5 bg-white dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded text-xs outline-none focus:ring-1 focus:ring-primary focus:border-primary text-slate-900 dark:text-white font-semibold transition-all"
                 >
                   <option value="LP 1">LP Form 1 (Introduction & Setup)</option>
                   <option value="LP 2">LP Form 2 (Basics & Hand Tools)</option>
@@ -1293,7 +1327,7 @@ export const PreVocationalModule: React.FC = () => {
                   min={1}
                   value={presentStudents}
                   onChange={(e) => setPresentStudents(parseInt(e.target.value) || 0)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-205 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white"
+                  className="w-full px-2.5 py-1.5 bg-white dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded text-xs outline-none focus:ring-1 focus:ring-primary focus:border-primary text-slate-900 dark:text-white font-semibold transition-all"
                 />
               </div>
 
@@ -1306,7 +1340,7 @@ export const PreVocationalModule: React.FC = () => {
                   value={trainerRemarks}
                   onChange={(e) => setTrainerRemarks(e.target.value)}
                   placeholder="Enter lesson observations, materials used, etc. (Required)"
-                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white font-medium"
+                  className="w-full px-2.5 py-1.5 bg-white dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded text-xs outline-none focus:ring-1 focus:ring-primary focus:border-primary text-slate-900 dark:text-white font-medium transition-all"
                 />
               </div>
 
@@ -1319,7 +1353,7 @@ export const PreVocationalModule: React.FC = () => {
                   placeholder="smartboard malfunction, power fluctuations, or enter None (Required)"
                   value={issuesFaced}
                   onChange={(e) => setIssuesFaced(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-xs outline-none focus:border-primary text-slate-900 dark:text-white"
+                  className="w-full px-2.5 py-1.5 bg-white dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded text-xs outline-none focus:ring-1 focus:ring-primary focus:border-primary text-slate-900 dark:text-white font-semibold transition-all"
                 />
               </div>
 
@@ -1327,19 +1361,20 @@ export const PreVocationalModule: React.FC = () => {
               <div>
                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Classroom Verification Photo * <span className="text-red-500">(Compulsory)</span></span>
                 {photoBlob ? (
-                  <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-w-[140px] mx-auto shadow-md">
+                  <div className="relative rounded overflow-hidden border border-slate-300 dark:border-slate-600 max-w-[140px] mx-auto shadow-md">
                     <img src={photoBlob} alt="Classroom capture preview" className="w-full h-24 object-cover" />
                     <button
                       type="button"
                       onClick={() => setPhotoBlob(null)}
-                      className="absolute top-1 right-1 px-1.5 py-0.5 bg-black/60 hover:bg-black text-[9px] text-white rounded font-bold transition-all"
+                      className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transition-all flex items-center justify-center border border-white"
+                      title="Remove Photo"
                     >
-                      Delete
+                      <Trash size={12} />
                     </button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                    <label className="relative overflow-hidden flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
                       <Camera size={14} />
                       <span>Take Photo</span>
                       <input
@@ -1347,18 +1382,18 @@ export const PreVocationalModule: React.FC = () => {
                         accept="image/*"
                         capture="environment"
                         onChange={handlePhotoUpload}
-                        className="hidden"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                     </label>
 
-                    <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                    <label className="relative overflow-hidden flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
                       <Upload size={14} />
                       <span>Upload File</span>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handlePhotoUpload}
-                        className="hidden"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                     </label>
                   </div>

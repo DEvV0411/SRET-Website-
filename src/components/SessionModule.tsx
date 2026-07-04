@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
 import { Session, School, Student, ProgrammeName, SessionStatus } from '../types';
-import { Calendar, Play, CheckCircle, XCircle, MapPin, Camera, AlertCircle, RefreshCw, UploadCloud } from 'lucide-react';
+import { Calendar, Play, CheckCircle, XCircle, MapPin, Camera, AlertCircle, RefreshCw, UploadCloud, Trash, X } from 'lucide-react';
 
 interface SessionModuleProps {
   selectedSessionId: string | null;
@@ -119,13 +119,45 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
     setPresentStudentIds([]);
   };
 
-  // Handle actual photo file upload or camera capture
+  // Handle actual photo file upload or camera capture with client-side image compression
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoBlob(reader.result as string);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize image: cap max dimension at 800px
+        const MAX_DIM = 800;
+        if (width > height) {
+          if (width > MAX_DIM) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          }
+        } else {
+          if (height > MAX_DIM) {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // Compress to JPEG with 0.6 quality (60%)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          setPhotoBlob(compressedBase64);
+        }
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -233,9 +265,11 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                 </div>
                 <button 
                   onClick={() => { setActiveSession(null); setSelectedSessionId(null); }}
-                  className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[9px] text-slate-500 font-bold"
+                  className="w-7 h-7 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-full transition-colors shadow-sm"
+                  aria-label="Close session form"
+                  type="button"
                 >
-                  Cancel
+                  <X size={12} />
                 </button>
               </div>
 
@@ -344,19 +378,20 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                     <div>
                       <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Classroom Observation Photo</span>
                       {photoBlob ? (
-                        <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-w-[140px] mx-auto shadow-md">
+                        <div className="relative rounded overflow-hidden border border-slate-300 dark:border-slate-600 max-w-[140px] mx-auto shadow-md">
                           <img src={photoBlob} alt="Classroom capture preview" className="w-full h-24 object-cover" />
                           <button
                             type="button"
                             onClick={() => setPhotoBlob(null)}
-                            className="absolute top-1 right-1 px-1.5 py-0.5 bg-black/60 hover:bg-black text-[9px] text-white rounded font-bold transition-all"
+                            className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transition-all flex items-center justify-center border border-white"
+                            title="Remove Photo"
                           >
-                            Delete
+                            <Trash size={12} />
                           </button>
                         </div>
                       ) : (
                         <div className="flex gap-2">
-                          <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                          <label className="relative overflow-hidden flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
                             <Camera size={14} />
                             <span>Take Photo</span>
                             <input
@@ -364,18 +399,18 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                               accept="image/*"
                               capture="environment"
                               onChange={handlePhotoUpload}
-                              className="hidden"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
                           </label>
 
-                          <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                          <label className="relative overflow-hidden flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
                             <UploadCloud size={14} />
                             <span>Upload File</span>
                             <input
                               type="file"
                               accept="image/*"
                               onChange={handlePhotoUpload}
-                              className="hidden"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
                           </label>
                         </div>
@@ -402,7 +437,7 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                         value={remarks}
                         onChange={(e) => setRemarks(e.target.value)}
                         placeholder="Type any trainer remarks..."
-                        className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded text-[11px] outline-none focus:border-primary text-slate-900 dark:text-white"
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded text-[11px] outline-none focus:ring-1 focus:ring-primary focus:border-primary text-slate-900 dark:text-white font-semibold transition-all"
                       />
                     </div>
                   </div>
