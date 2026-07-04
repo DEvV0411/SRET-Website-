@@ -40,55 +40,76 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
   // Filter items based on permissions/roles and vertical scoping
   const visibleItems = menuItems.filter(item => {
-    // If super admin, has access to all
+    // Super admin sees everything
     if (currentUser.role === 'super_admin') return true;
 
-    // Check vertical limitations
-    if (item.vertical) {
-      if (currentUser.role === 'trainer') {
-        return currentUser.assignedProgramme === item.vertical || currentUser.assignedProgramme === 'All';
-      }
-      if (currentUser.assignedProgramme !== 'All' && currentUser.assignedProgramme !== item.vertical) {
-        return false;
-      }
-    }
-
-    // Role-specific menu restrictions
+    // Driver: only personal dashboard + transport
     if (currentUser.role === 'driver') {
       return item.id === 'personal_dashboard' || item.id === 'transport';
     }
 
+    // Trainer: only personal dashboard + their assigned vertical
     if (currentUser.role === 'trainer') {
-      return item.id === 'personal_dashboard' || item.id === 'transport' || (item.vertical && (currentUser.assignedProgramme === item.vertical || currentUser.assignedProgramme === 'All'));
+      if (item.id === 'personal_dashboard') return true;
+      if (item.vertical) {
+        return currentUser.assignedProgramme === 'All' || currentUser.assignedProgramme === item.vertical;
+      }
+      return false; // hide everything else (inventory, transport, users, etc.)
     }
-    
-    // Check permission gating
+
+    // Counsellor: personal dashboard + counselling only
+    if (currentUser.role === 'counsellor') {
+      return item.id === 'personal_dashboard' || item.id === 'counselling';
+    }
+
+    // Inventory team: personal dashboard + inventory only
+    if (currentUser.role === 'inventory_team') {
+      return item.id === 'personal_dashboard' || item.id === 'inventory';
+    }
+
+    // Transport team: personal dashboard + transport only
+    if (currentUser.role === 'transport_team') {
+      return item.id === 'personal_dashboard' || item.id === 'transport';
+    }
+
+    // Programme head / coordinator: personal dashboard + their assigned vertical only
+    if (currentUser.role === 'programme_head' || currentUser.role === 'programme_coordinator') {
+      if (item.id === 'personal_dashboard') return true;
+      if (item.id === 'monitoring' && currentUser.role === 'programme_coordinator') return true;
+      if (item.vertical) {
+        return currentUser.assignedProgramme === 'All' || currentUser.assignedProgramme === item.vertical;
+      }
+      // Also allow inventory and transport for programme heads
+      if (currentUser.role === 'programme_head') {
+        return item.id === 'inventory' || item.id === 'transport';
+      }
+      return false;
+    }
+
+    // Viewer: personal dashboard + assigned vertical (read-only access enforced at module level)
+    if (currentUser.role === 'viewer') {
+      if (item.id === 'personal_dashboard') return true;
+      if (item.vertical) {
+        return currentUser.assignedProgramme === 'All' || currentUser.assignedProgramme === item.vertical;
+      }
+      return false;
+    }
+
+    // Fallback: check permission and role gating
     if (item.permission && !hasPermission(item.permission)) return false;
-    
-    // Check role restriction
     if (item.role && currentUser.role !== item.role) return false;
-    
     return true;
   });
 
-  // Mobile navigation bottom list (primary actions)
-  const mobilePrimaryItems = [
-    { id: 'personal_dashboard', icon: LayoutDashboard, label: 'Home' },
-    { id: 'pre_vocational', icon: BookOpen, label: 'Pre-Voc', vertical: 'Pre-Vocational' },
-    { id: 'vocational', icon: BookOpen, label: 'Vocational', vertical: 'Vocational' },
-    { id: 'transport', icon: Truck, label: 'Transport' },
-    { id: 'inventory', icon: Package, label: 'Inventory', permission: 'Manage Inventory' },
-  ].filter(item => {
-    if (currentUser.role === 'super_admin') return true;
-    if (currentUser.role === 'driver') {
-      return item.id === 'personal_dashboard' || item.id === 'transport';
+  // Mobile navigation bottom list — same scoping rules, max 5 items
+  const mobilePrimaryItems = menuItems.filter(item => {
+    if (currentUser.role === 'super_admin') {
+      // Super admin bottom nav: home, pre-voc, vocational, transport, inventory
+      return ['personal_dashboard', 'dashboard', 'pre_vocational', 'vocational', 'transport'].includes(item.id);
     }
-    if (currentUser.role === 'trainer') {
-      return item.id === 'personal_dashboard' || item.id === 'transport' || (item.vertical && (currentUser.assignedProgramme === item.vertical || currentUser.assignedProgramme === 'All'));
-    }
-    if (item.permission && !hasPermission(item.permission)) return false;
-    return true;
-  });
+    // Everyone else: just reuse the visibleItems filter (already computed)
+    return visibleItems.some(v => v.id === item.id);
+  }).slice(0, 5);
 
   return (
     <>
