@@ -48,10 +48,14 @@ export const App: React.FC = () => {
 
   // Trigger automatic Firestore database sync pull on login/startup
   useEffect(() => {
-    if (currentUser) {
-      db.pullAllFromFirestore();
-      db.setupRealtimeListeners();
-    }
+    const syncAndPull = async () => {
+      if (currentUser) {
+        await db.syncPendingQueue();
+        await db.pullAllFromFirestore();
+        db.setupRealtimeListeners();
+      }
+    };
+    syncAndPull();
   }, [currentUser, isOnline]);
 
   // Return Login if unauthenticated

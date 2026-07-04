@@ -928,14 +928,14 @@ class OmpDatabase {
     return localStorage.getItem('omp_network_online') === 'true';
   }
 
-  public setNetworkOnline(status: boolean) {
+  public async setNetworkOnline(status: boolean) {
     localStorage.setItem('omp_network_online', String(status));
     window.dispatchEvent(new Event('omp_network_status_change'));
     
     // Auto-trigger sync and pull if we go online
     if (status) {
-      this.syncPendingQueue();
-      this.pullAllFromFirestore();
+      await this.syncPendingQueue();
+      await this.pullAllFromFirestore();
     }
   }
 
