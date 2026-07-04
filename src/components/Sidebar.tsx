@@ -44,9 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     // If super admin, has access to all
     if (currentUser.role === 'super_admin') return true;
     
-    // If trainer, restrict strictly to Dashboard and Pre Vocational
+    // If trainer, restrict strictly to Dashboard, Pre Vocational, and Lesson Plans
     if (currentUser.role === 'trainer') {
-      return item.id === 'dashboard' || item.id === 'pre_vocational';
+      return item.id === 'dashboard' || item.id === 'pre_vocational' || item.id === 'lesson_plans';
     }
     
     // Check permission gating
@@ -63,12 +63,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
     { id: 'students', icon: Users, label: 'Students' },
     { id: 'sessions', icon: Calendar, label: 'Sessions' },
+    { id: 'pre_vocational', icon: BookOpen, label: 'Pre Vocational' },
+    { id: 'lesson_plans', icon: BookOpen, label: 'Lesson Plans' },
     { id: 'inventory', icon: Package, label: 'Inventory', permission: 'Manage Inventory' },
     { id: 'reports', icon: FileText, label: 'Reports', permission: 'View Reports' },
   ].filter(item => {
     if (currentUser.role === 'super_admin') return true;
     if (currentUser.role === 'trainer') {
-      return item.id === 'dashboard';
+      return item.id === 'dashboard' || item.id === 'pre_vocational' || item.id === 'lesson_plans';
     }
     if (item.permission && !hasPermission(item.permission)) return false;
     return true;
