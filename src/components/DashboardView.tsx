@@ -84,8 +84,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
           timestamp: new Date().toISOString()
         },
         locationHistory: [
-          { lat: coord.lat - 0.05, lng: coord.coord?.lng || coord.lng - 0.05, timestamp: new Date().toISOString() },
-          coord
+          { lat: coord.lat - 0.05, lng: coord.lng - 0.05, timestamp: new Date().toISOString() },
+          { ...coord, timestamp: new Date().toISOString() }
         ]
       };
     }
@@ -265,7 +265,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
                 if (!tr.lastKnownLocation) return null;
                 const { x, y } = mapCoordsToSvg(tr.lastKnownLocation.lat, tr.lastKnownLocation.lng);
                 return (
-                  <g key={tr.username} className="cursor-pointer" onClick={() => setSelectedPinUser(tr)}>
+                  <g key={tr.username} className="cursor-pointer" onClick={() => setSelectedPinUser(tr as User)}>
                     <circle cx={x} cy={y} r="10" className="fill-primary/20 animate-ping" />
                     <circle cx={x} cy={y} r="6" className="fill-primary stroke-white stroke-2" />
                   </g>

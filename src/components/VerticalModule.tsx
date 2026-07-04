@@ -8,7 +8,8 @@ import type {
 import { 
   LayoutDashboard, Users, BookOpen, Package, FileText, Plus, Search, Filter, 
   ShieldCheck, ClipboardCheck, ArrowUpRight, GraduationCap, Phone, MapPin, 
-  ClipboardList, AlertTriangle, CheckCircle, Calendar, RefreshCw, Eye
+  ClipboardList, AlertTriangle, CheckCircle, Calendar, RefreshCw, Eye,
+  School as SchoolIcon
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -461,7 +462,7 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
 
                     <div className="space-y-1.5 text-slate-500 dark:text-slate-400 text-[11px] font-medium">
                       <div className="flex items-center gap-1.5">
-                        <School size={12} className="text-slate-400" />
+                        <SchoolIcon size={12} className="text-slate-400" />
                         <span>{sch?.name || 'School Code: ' + student.schoolCode}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
