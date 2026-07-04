@@ -288,6 +288,30 @@ const SEED_USERS: User[] = [
     password: 'password123',
     permissions: ['View Driver Dashboard', 'Log Trips'],
     activityLogs: []
+  },
+  {
+    username: 'trainer.amit',
+    name: 'Amit Patel (Vocational Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Vocational',
+    assignedSchools: ['S101'],
+    assignedDistricts: ['Ahmedabad'],
+    isActive: true,
+    password: 'password123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'trainer.neha',
+    name: 'Neha Shah (Magic Touch Trainer)',
+    role: 'trainer',
+    assignedProgramme: 'Magic Touch',
+    assignedSchools: ['S103'],
+    assignedDistricts: ['Aravalli'],
+    isActive: true,
+    password: 'password123',
+    permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
   }
 ];
 
