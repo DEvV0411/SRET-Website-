@@ -97,16 +97,22 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
 
     // 3. Get Sessions for this vertical
     const allSessions = db.getSessions();
-    const verticalSessions = allSessions.filter(s => s.programme === programme);
+    let verticalSessions = allSessions.filter(s => s.programme === programme);
+    if (currentUser?.role === 'trainer') {
+      verticalSessions = verticalSessions.filter(s => s.trainerUsername === currentUser.username);
+    }
     setSessions(verticalSessions);
 
     // 4. Get Timetable allotments
     const allTimetable = db.getTimetable();
     // Filter allotments where the school runs this programme
-    const verticalAllotment = allTimetable.filter(t => {
+    let verticalAllotment = allTimetable.filter(t => {
       const sch = allSchools.find(s => s.name === t.schoolName);
       return sch && sch.runningProgrammes.includes(programme);
     });
+    if (currentUser?.role === 'trainer') {
+      verticalAllotment = verticalAllotment.filter(t => t.teacherName === currentUser.name);
+    }
     setTimetable(verticalAllotment);
 
     // 5. Get Inventory logs specific to this vertical
