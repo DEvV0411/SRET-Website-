@@ -32,7 +32,9 @@ const DICTIONARY: Record<string, Record<'en' | 'gu', string>> = {
   'attendance_rate': { en: 'Attendance Rate', gu: 'હાજરી દર' },
   'offline_notice': { en: 'Offline Mode (Local Storage Active)', gu: 'ઑફલાઇન મોડ (સ્થાનિક સ્ટોરેજ સક્રિય)' },
   'synced_notice': { en: 'System Synced', gu: 'સિસ્ટમ સમન્વયિત છે' },
-  'logout': { en: 'Sign Out', gu: 'લૉગ આઉટ' }
+  'logout': { en: 'Sign Out', gu: 'લૉગ આઉટ' },
+  'pre_vocational': { en: 'Pre Vocational', gu: 'પૂર્વ-વ્યવસાયિક' },
+  'pre vocational': { en: 'Pre Vocational', gu: 'પૂર્વ-વ્યવસાયિક' }
 };
 
 interface AuthContextType {

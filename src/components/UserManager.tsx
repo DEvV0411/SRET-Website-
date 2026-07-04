@@ -32,6 +32,24 @@ export const UserManager: React.FC = () => {
     }
   };
 
+  const [isPulling, setIsPulling] = useState(false);
+
+  const handlePullDatabase = async () => {
+    setIsPulling(true);
+    try {
+      await db.pullAllFromFirestore();
+      window.dispatchEvent(new CustomEvent('omp_toast_message', { 
+        detail: 'Cloud sync pull complete! Stored data updated.' 
+      }));
+      // Reload users since we might have pulled user updates
+      loadUsers();
+    } catch (err: any) {
+      alert(`Pull failed: ${err.message}`);
+    } finally {
+      setIsPulling(false);
+    }
+  };
+
   // Form states
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
@@ -54,6 +72,10 @@ export const UserManager: React.FC = () => {
 
   useEffect(() => {
     loadUsers();
+    window.addEventListener('omp_db_pulled', loadUsers);
+    return () => {
+      window.removeEventListener('omp_db_pulled', loadUsers);
+    };
   }, []);
 
   const loadUsers = () => {
@@ -341,6 +363,15 @@ export const UserManager: React.FC = () => {
                       Successfully seeded {seedCount} records to Cloud Firestore.
                     </div>
                   )}
+
+                  <button
+                    onClick={handlePullDatabase}
+                    disabled={isPulling}
+                    className="w-full py-2 bg-secondary hover:bg-secondary-dark text-white rounded text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    {isPulling ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                    <span>Pull & Sync Cloud Data</span>
+                  </button>
 
                   <button
                     onClick={() => db.syncPendingQueue()}

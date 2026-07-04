@@ -28,10 +28,23 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
   const [photoBlob, setPhotoBlob] = useState<string | null>(null); // Camera simulation
   const [gpsCoords, setGpsCoords] = useState<{lat: number, lng: number} | null>(null);
   const [isCapturingGps, setIsCapturingGps] = useState(false);
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadSessions();
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    const handleRealTimeUpdate = () => {
+      loadSessions();
+    };
+    window.addEventListener('omp_session_conducted_update', handleRealTimeUpdate);
+    window.addEventListener('omp_db_pulled', handleRealTimeUpdate);
+    return () => {
+      window.removeEventListener('omp_session_conducted_update', handleRealTimeUpdate);
+      window.removeEventListener('omp_db_pulled', handleRealTimeUpdate);
+    };
+  }, []);
 
   const loadSessions = () => {
     let rawSessions = db.getSessions();
@@ -106,16 +119,15 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
     setPresentStudentIds([]);
   };
 
-  // Mock Camera Upload
-  const triggerCameraMock = () => {
-    // Generate a random Unsplash classroom picture to mock trainer photo upload
-    const mockPhotos = [
-      'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=400',
-      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=400',
-      'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=400'
-    ];
-    const picked = mockPhotos[Math.floor(Math.random() * mockPhotos.length)];
-    setPhotoBlob(picked);
+  // Handle actual photo file upload or camera capture
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoBlob(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   // Submit Session Confirmation (Tap 3)
@@ -328,29 +340,45 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                 {/* Media uploads and remarks */}
                 {confirmStatus === 'Completed' && (
                   <div className="space-y-3.5">
-                    {/* Photo Simulation */}
+                    {/* Camera photo input */}
                     <div>
                       <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Classroom Observation Photo</span>
                       {photoBlob ? (
-                        <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-w-[140px] mx-auto">
-                          <img src={photoBlob} alt="Classroom upload preview" className="w-full h-24 object-cover" />
+                        <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-w-[140px] mx-auto shadow-md">
+                          <img src={photoBlob} alt="Classroom capture preview" className="w-full h-24 object-cover" />
                           <button
                             type="button"
                             onClick={() => setPhotoBlob(null)}
-                            className="absolute top-1 right-1 px-1 bg-black/60 hover:bg-black rounded text-[9px] text-white"
+                            className="absolute top-1 right-1 px-1.5 py-0.5 bg-black/60 hover:bg-black text-[9px] text-white rounded font-bold transition-all"
                           >
-                            Change
+                            Delete
                           </button>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={triggerCameraMock}
-                          className="w-full py-2 border border-dashed border-slate-350 dark:border-dark-border hover:border-primary text-slate-500 hover:text-primary rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all"
-                        >
-                          <Camera size={14} />
-                          Take Photo (Camera Mock)
-                        </button>
+                        <div className="flex gap-2">
+                          <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                            <Camera size={14} />
+                            <span>Take Photo</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              capture="environment"
+                              onChange={handlePhotoUpload}
+                              className="hidden"
+                            />
+                          </label>
+
+                          <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                            <UploadCloud size={14} />
+                            <span>Upload File</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handlePhotoUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
                       )}
                     </div>
 
@@ -451,7 +479,7 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                 return (
                   <div 
                     key={session.id} 
-                    className={`bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-4 rounded-md shadow-sm relative flex flex-col justify-between h-44 ${
+                    className={`bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-4 rounded-md shadow-sm relative flex flex-col justify-between h-auto min-h-[176px] ${
                       session.status === 'Completed' 
                         ? 'border-l-4 border-l-secondary' 
                         : session.status === 'Missed'
@@ -481,6 +509,20 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                       <p className="text-[10px] text-slate-500 mt-1 font-semibold capitalize bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border px-1.5 py-0.5 rounded inline-block">
                         {session.programme} • {session.subject}
                       </p>
+
+                      {session.photoUrl && (
+                        <div className="mt-3">
+                          <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Classroom Observation</span>
+                          <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-h-[100px] shadow-sm">
+                            <img 
+                              src={session.photoUrl} 
+                              alt="Classroom Observation" 
+                              className="w-full h-20 object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+                              onClick={() => setActivePhotoUrl(session.photoUrl || null)}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center border-t border-slate-100 dark:border-dark-border/60 pt-3 mt-3">
@@ -509,6 +551,28 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
           </div>
         </div>
       )}
+      {/* Lightbox modal overlay */}
+      {activePhotoUrl && (
+        <div 
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 cursor-pointer animate-fadeIn"
+          onClick={() => setActivePhotoUrl(null)}
+        >
+          <div className="relative max-w-3xl max-h-[85vh] bg-white dark:bg-dark-surface p-2 rounded-lg border border-slate-200 dark:border-dark-border shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setActivePhotoUrl(null)}
+              className="absolute top-4 right-4 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all text-xs z-10"
+            >
+              ✕
+            </button>
+            <img 
+              src={activePhotoUrl} 
+              alt="Classroom Observation Fullscreen" 
+              className="max-w-full max-h-[80vh] object-contain rounded"
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

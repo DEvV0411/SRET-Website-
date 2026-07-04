@@ -22,6 +22,10 @@ export const InventoryModule: React.FC = () => {
 
   useEffect(() => {
     loadInventory();
+    window.addEventListener('omp_db_pulled', loadInventory);
+    return () => {
+      window.removeEventListener('omp_db_pulled', loadInventory);
+    };
   }, []);
 
   const loadInventory = () => {

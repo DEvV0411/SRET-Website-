@@ -40,9 +40,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab, setS
     };
     window.addEventListener('omp_session_conducted_update', handleUpdate);
     window.addEventListener('omp_alerts_change', handleUpdate);
+    window.addEventListener('omp_db_pulled', handleUpdate);
     return () => {
       window.removeEventListener('omp_session_conducted_update', handleUpdate);
       window.removeEventListener('omp_alerts_change', handleUpdate);
+      window.removeEventListener('omp_db_pulled', handleUpdate);
     };
   }, []);
   

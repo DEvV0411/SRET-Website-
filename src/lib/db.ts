@@ -4,7 +4,7 @@ import {
   MonitoringVisit, SystemAlert, SyncItem, TimetableEntry, ActivityLog 
 } from '../types';
 import { firestoreDb, isFirebaseConfigured } from './firebase';
-import { doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, writeBatch, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 // Mock Seed Data Definitions
 const SEED_USERS: User[] = [
@@ -817,6 +817,8 @@ const SEED_TIMETABLE: TimetableEntry[] = [
 
 // Database Manager wrapper Class utilizing HTML5 localStorage
 class OmpDatabase {
+  private activeListeners: (() => void)[] = [];
+
   constructor() {
     this.initDatabase();
   }
@@ -930,9 +932,10 @@ class OmpDatabase {
     localStorage.setItem('omp_network_online', String(status));
     window.dispatchEvent(new Event('omp_network_status_change'));
     
-    // Auto-trigger sync if we go online
+    // Auto-trigger sync and pull if we go online
     if (status) {
       this.syncPendingQueue();
+      this.pullAllFromFirestore();
     }
   }
 
@@ -1399,6 +1402,170 @@ class OmpDatabase {
     if (isFirebaseConfigured) {
       this.queueSyncItem('omp_audit_logs', 'insert', newLog);
     }
+  }
+
+  // Pull collection from Firestore and merge with local storage
+  public async pullTableFromFirestore(table: string, keyField: string = 'id') {
+    if (!isFirebaseConfigured || !firestoreDb || !this.isNetworkOnline()) return;
+    const colName = this.getFirestoreCollectionName(table);
+    try {
+      const colRef = collection(firestoreDb, colName);
+      const snapshot = await getDocs(colRef);
+      const remoteRecords: any[] = [];
+      snapshot.forEach(docSnap => {
+        remoteRecords.push(docSnap.data());
+      });
+
+      if (remoteRecords.length === 0) return;
+
+      const localRecords = this.getTable<any>(table);
+      const recordMap = new Map<string, any>();
+
+      // Populate with local records
+      localRecords.forEach(r => {
+        const id = r[keyField];
+        if (id) recordMap.set(String(id), r);
+      });
+
+      // Merge remote records (remote data takes precedence, but fields are merged)
+      remoteRecords.forEach(r => {
+        const id = r[keyField];
+        if (id) {
+          const localVal = recordMap.get(String(id));
+          if (localVal) {
+            recordMap.set(String(id), { ...localVal, ...r });
+          } else {
+            recordMap.set(String(id), r);
+          }
+        }
+      });
+
+      const merged = Array.from(recordMap.values());
+      
+      // Sort audit logs by timestamp descending if table is audit logs
+      if (table === 'omp_audit_logs') {
+        merged.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      }
+
+      this.saveTable(table, merged);
+    } catch (err) {
+      console.warn(`[Firebase Pull] Failed to pull table ${table}:`, err);
+    }
+  }
+
+  // Pull all tables from Firestore to local storage
+  public async pullAllFromFirestore() {
+    if (!isFirebaseConfigured || !firestoreDb || !this.isNetworkOnline()) return;
+    
+    const tables = [
+      { name: 'omp_users', key: 'username' },
+      { name: 'omp_schools', key: 'code' },
+      { name: 'omp_students', key: 'studentId' },
+      { name: 'omp_sessions', key: 'id' },
+      { name: 'omp_lesson_plans', key: 'id' },
+      { name: 'omp_inventory', key: 'id' },
+      { name: 'omp_transport', key: 'id' },
+      { name: 'omp_counselling', key: 'id' },
+      { name: 'omp_monitoring', key: 'id' },
+      { name: 'omp_alerts', key: 'id' },
+      { name: 'omp_timetable', key: 'id' },
+      { name: 'omp_audit_logs', key: 'id' }
+    ];
+
+    for (const table of tables) {
+      await this.pullTableFromFirestore(table.name, table.key);
+    }
+    
+    // Dispatch global pull completed event
+    window.dispatchEvent(new Event('omp_db_pulled'));
+  }
+
+  // Set up real-time onSnapshot listeners for all collections in Firestore
+  public setupRealtimeListeners() {
+    if (!isFirebaseConfigured || !firestoreDb || !this.isNetworkOnline()) return;
+
+    // Clear any existing listeners first to prevent duplicates
+    this.activeListeners.forEach(unsubscribe => unsubscribe());
+    this.activeListeners = [];
+
+    const tables = [
+      { name: 'omp_users', key: 'username' },
+      { name: 'omp_schools', key: 'code' },
+      { name: 'omp_students', key: 'studentId' },
+      { name: 'omp_sessions', key: 'id' },
+      { name: 'omp_lesson_plans', key: 'id' },
+      { name: 'omp_inventory', key: 'id' },
+      { name: 'omp_transport', key: 'id' },
+      { name: 'omp_counselling', key: 'id' },
+      { name: 'omp_monitoring', key: 'id' },
+      { name: 'omp_alerts', key: 'id' },
+      { name: 'omp_timetable', key: 'id' },
+      { name: 'omp_audit_logs', key: 'id' }
+    ];
+
+    tables.forEach(table => {
+      const colName = this.getFirestoreCollectionName(table.name);
+      try {
+        const colRef = collection(firestoreDb, colName);
+        const unsubscribe = onSnapshot(colRef, (snapshot) => {
+          // Skip if there are local pending writes to avoid race conditions or redundant local overwrites
+          if (snapshot.metadata.hasPendingWrites) return;
+
+          const remoteRecords: any[] = [];
+          snapshot.forEach(docSnap => {
+            remoteRecords.push(docSnap.data());
+          });
+
+          if (remoteRecords.length === 0) return;
+
+          const localRecords = this.getTable<any>(table.name);
+          const recordMap = new Map<string, any>();
+
+          // Load local records
+          localRecords.forEach(r => {
+            const id = r[table.key];
+            if (id) recordMap.set(String(id), r);
+          });
+
+          // Merge remote records
+          remoteRecords.forEach(r => {
+            const id = r[table.key];
+            if (id) {
+              const localVal = recordMap.get(String(id));
+              if (localVal) {
+                recordMap.set(String(id), { ...localVal, ...r });
+              } else {
+                recordMap.set(String(id), r);
+              }
+            }
+          });
+
+          const merged = Array.from(recordMap.values());
+          
+          if (table.name === 'omp_audit_logs') {
+            merged.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          }
+
+          this.saveTable(table.name, merged);
+
+          // Dispatch event triggers
+          if (table.name === 'omp_sessions') {
+            window.dispatchEvent(new Event('omp_session_conducted_update'));
+          } else if (table.name === 'omp_alerts') {
+            window.dispatchEvent(new Event('omp_alerts_change'));
+          }
+          
+          // General reload event
+          window.dispatchEvent(new Event('omp_db_pulled'));
+        }, (err) => {
+          console.warn(`[Firebase Realtime] Listener error on /${colName}:`, err);
+        });
+
+        this.activeListeners.push(unsubscribe);
+      } catch (err) {
+        console.warn(`[Firebase Realtime] Failed to register listener for ${table.name}:`, err);
+      }
+    });
   }
 }
 

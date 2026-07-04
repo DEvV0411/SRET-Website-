@@ -6,7 +6,7 @@ import {
   Database, Calendar, Users, School as SchoolIcon, Play, 
   CheckCircle, ShieldCheck, ClipboardCheck, ArrowUpRight, 
   Search, Upload, Plus, FileSpreadsheet, AlertCircle, RefreshCw, 
-  Trash, Eye, Bell, Lock 
+  Trash, Eye, Bell, Lock, Camera 
 } from 'lucide-react';
 
 export const PreVocationalModule: React.FC = () => {
@@ -14,6 +14,7 @@ export const PreVocationalModule: React.FC = () => {
   
   // Navigation sub-tabs
   const [subTab, setSubTab] = useState<'dashboard' | 'timetable' | 'sessions' | 'audit'>('dashboard');
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
   
   // Roster and schedules lists
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
@@ -66,9 +67,11 @@ export const PreVocationalModule: React.FC = () => {
 
     window.addEventListener('omp_session_conducted_update', handleRealTimeUpdate);
     window.addEventListener('omp_alerts_change', handleRealTimeUpdate);
+    window.addEventListener('omp_db_pulled', handleRealTimeUpdate);
     return () => {
       window.removeEventListener('omp_session_conducted_update', handleRealTimeUpdate);
       window.removeEventListener('omp_alerts_change', handleRealTimeUpdate);
+      window.removeEventListener('omp_db_pulled', handleRealTimeUpdate);
     };
   }, []);
 
@@ -277,14 +280,15 @@ export const PreVocationalModule: React.FC = () => {
     }, 150);
   };
 
-  // Seed photo simulation
-  const triggerCameraPhotoMock = () => {
-    const samplePhotos = [
-      'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=400',
-      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=400'
-    ];
-    const picked = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
-    setPhotoBlob(picked);
+  // Handle actual photo file upload or camera capture
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoBlob(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   // Helper filters lists
@@ -1103,7 +1107,7 @@ export const PreVocationalModule: React.FC = () => {
                 {sessions.map(sess => {
                   const school = db.getSchoolByCode(sess.schoolCode);
                   return (
-                    <div key={sess.id} className="p-4 border border-slate-200 dark:border-dark-border rounded bg-slate-50 dark:bg-dark-card/30 flex flex-col justify-between h-48">
+                    <div key={sess.id} className="p-4 border border-slate-200 dark:border-dark-border rounded bg-slate-50 dark:bg-dark-card/30 flex flex-col justify-between h-auto min-h-[190px]">
                       <div>
                         <div className="flex justify-between items-start">
                           <span className="text-[10px] font-mono text-slate-400 font-bold">{sess.id}</span>
@@ -1129,6 +1133,20 @@ export const PreVocationalModule: React.FC = () => {
                           <div className="text-[10px] text-slate-500 font-semibold mt-2">
                             <span>Attendance: <span className="text-slate-900 dark:text-white font-bold">{sess.studentsPresentCount} present</span></span>
                             {sess.issuesFaced && <span className="block text-red-500 mt-0.5 italic">Issue: {sess.issuesFaced}</span>}
+                          </div>
+                        )}
+
+                        {sess.photoUrl && (
+                          <div className="mt-3">
+                            <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Classroom Verification</span>
+                            <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-h-[100px] shadow-sm">
+                              <img 
+                                src={sess.photoUrl} 
+                                alt="Classroom Verification" 
+                                className="w-full h-20 object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+                                onClick={() => setActivePhotoUrl(sess.photoUrl || null)}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1305,28 +1323,45 @@ export const PreVocationalModule: React.FC = () => {
                 />
               </div>
 
-              {/* Camera photo simulator */}
+              {/* Camera photo input */}
               <div>
                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Classroom Verification Photo * <span className="text-red-500">(Compulsory)</span></span>
                 {photoBlob ? (
-                  <div className="relative rounded overflow-hidden border border-slate-205 max-w-[140px] mx-auto">
-                    <img src={photoBlob} alt="Simulated capture preview" className="w-full h-24 object-cover" />
+                  <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-w-[140px] mx-auto shadow-md">
+                    <img src={photoBlob} alt="Classroom capture preview" className="w-full h-24 object-cover" />
                     <button
                       type="button"
                       onClick={() => setPhotoBlob(null)}
-                      className="absolute top-1 right-1 px-1.5 py-0.5 bg-black/60 hover:bg-black text-[9px] text-white rounded font-bold"
+                      className="absolute top-1 right-1 px-1.5 py-0.5 bg-black/60 hover:bg-black text-[9px] text-white rounded font-bold transition-all"
                     >
                       Delete
                     </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={triggerCameraPhotoMock}
-                    className="w-full py-2 border border-dashed border-slate-350 hover:border-primary text-slate-500 hover:text-primary rounded text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span>Simulate Camera Photo</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                      <Camera size={14} />
+                      <span>Take Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <label className="flex-1 flex flex-col items-center justify-center py-2.5 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded text-[11px] font-bold transition-all cursor-pointer gap-1">
+                      <Upload size={14} />
+                      <span>Upload File</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                 )}
               </div>
 
@@ -1347,6 +1382,26 @@ export const PreVocationalModule: React.FC = () => {
               </div>
 
             </form>
+          </div>
+        </div>
+      {/* Lightbox modal overlay */}
+      {activePhotoUrl && (
+        <div 
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 cursor-pointer animate-fadeIn"
+          onClick={() => setActivePhotoUrl(null)}
+        >
+          <div className="relative max-w-3xl max-h-[85vh] bg-white dark:bg-dark-surface p-2 rounded-lg border border-slate-200 dark:border-dark-border shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setActivePhotoUrl(null)}
+              className="absolute top-4 right-4 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all text-xs z-10"
+            >
+              ✕
+            </button>
+            <img 
+              src={activePhotoUrl} 
+              alt="Classroom Verification Fullscreen" 
+              className="max-w-full max-h-[80vh] object-contain rounded"
+            />
           </div>
         </div>
       )}

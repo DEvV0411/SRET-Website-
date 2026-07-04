@@ -22,6 +22,10 @@ export const MonitoringModule: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    window.addEventListener('omp_db_pulled', loadData);
+    return () => {
+      window.removeEventListener('omp_db_pulled', loadData);
+    };
   }, []);
 
   const loadData = () => {

@@ -15,6 +15,8 @@ import { PreVocationalModule } from './components/PreVocationalModule';
 import { AIAssistant } from './components/AIAssistant';
 import { Sparkles, HelpCircle, Bell, Wifi, WifiOff } from 'lucide-react';
 
+import { db } from './lib/db';
+
 export const App: React.FC = () => {
   const { currentUser, isOnline, syncQueueSize, t } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -43,6 +45,14 @@ export const App: React.FC = () => {
       window.removeEventListener('omp_toast_message', handleToast);
     };
   }, []);
+
+  // Trigger automatic Firestore database sync pull on login/startup
+  useEffect(() => {
+    if (currentUser) {
+      db.pullAllFromFirestore();
+      db.setupRealtimeListeners();
+    }
+  }, [currentUser]);
 
   // Return Login if unauthenticated
   if (!currentUser) {
