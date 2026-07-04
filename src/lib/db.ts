@@ -1272,6 +1272,7 @@ class OmpDatabase {
   public addAlert(alert: SystemAlert) {
     const alerts = this.getAlerts();
     alerts.unshift(alert);
+    this.queueSyncItem('omp_alerts', 'insert', alert);
     this.saveTable('omp_alerts', alerts);
     window.dispatchEvent(new Event('omp_alerts_change'));
   }
@@ -1281,6 +1282,7 @@ class OmpDatabase {
     const index = alerts.findIndex(a => a.id === id);
     if (index >= 0) {
       alerts[index].isResolved = true;
+      this.queueSyncItem('omp_alerts', 'update', alerts[index]);
       this.saveTable('omp_alerts', alerts);
       window.dispatchEvent(new Event('omp_alerts_change'));
     }

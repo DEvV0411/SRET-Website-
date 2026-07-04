@@ -1161,12 +1161,20 @@ export const PreVocationalModule: React.FC = () => {
                         </h4>
                         <p className="text-[10px] text-slate-500 font-semibold mt-1 truncate">{sess.subject} • {sess.date}</p>
                         
-                        {sess.studentsPresentCount !== undefined && (
-                          <div className="text-[10px] text-slate-500 font-semibold mt-2">
-                            <span>Attendance: <span className="text-slate-900 dark:text-white font-bold">{sess.studentsPresentCount} present</span></span>
-                            {sess.issuesFaced && <span className="block text-red-500 mt-0.5 italic">Issue: {sess.issuesFaced}</span>}
-                          </div>
-                        )}
+                        <div className="text-[10px] text-slate-500 font-semibold mt-2 space-y-1">
+                          {(sess.conductedBy || sess.trainerUsername) && (
+                            <span className="block">Trainer: <span className="text-slate-900 dark:text-white font-bold">{sess.conductedBy || sess.trainerUsername}</span></span>
+                          )}
+                          {sess.studentsPresentCount !== undefined && (
+                            <span className="block">Attendance: <span className="text-slate-900 dark:text-white font-bold">{sess.studentsPresentCount} present</span></span>
+                          )}
+                          {sess.remarks && (
+                            <span className="block italic text-slate-600 dark:text-slate-400 bg-slate-150 dark:bg-dark-card border border-slate-200 dark:border-dark-border p-1.5 rounded">Remarks: "{sess.remarks}"</span>
+                          )}
+                          {sess.issuesFaced && (
+                            <span className="block text-red-500 italic">Issue: {sess.issuesFaced}</span>
+                          )}
+                        </div>
 
                         {sess.photoUrl && (
                           <div className="mt-3">

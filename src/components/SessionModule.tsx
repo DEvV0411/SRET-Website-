@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { Session, School, Student, ProgrammeName, SessionStatus } from '../types';
+import { Session, School, Student, ProgrammeName, SessionStatus, SystemAlert } from '../types';
 import { Calendar, Play, CheckCircle, XCircle, MapPin, Camera, AlertCircle, RefreshCw, UploadCloud, Trash, X } from 'lucide-react';
 
 interface SessionModuleProps {
@@ -179,10 +179,41 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
       attendanceAbsent: absentStudentIds,
       remarks,
       photoUrl: photoBlob || undefined,
-      locationCoords: gpsCoords || undefined
+      locationCoords: gpsCoords || undefined,
+      conductedBy: activeSession.conductedBy || (confirmStatus === 'Completed' || confirmStatus === 'Conducted' ? currentUser?.name : undefined),
+      conductedAt: activeSession.conductedAt || (confirmStatus === 'Completed' || confirmStatus === 'Conducted' ? new Date().toISOString() : undefined),
+      studentsPresentCount: presentStudentIds.length
     };
 
+    const previous = JSON.stringify(activeSession);
     db.saveSession(updatedSession);
+    
+    // Log audit trail
+    db.writeAuditLog(
+      currentUser?.name || updatedSession.trainerUsername,
+      'Session Conducted Submission',
+      `Submitted class execution details for school: ${updatedSession.schoolCode}`,
+      previous,
+      JSON.stringify(updatedSession)
+    );
+
+    // Instant Notification Alert to Super Admin
+    if (confirmStatus === 'Completed' || confirmStatus === 'Conducted') {
+      const notification: SystemAlert = {
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'class_conducted',
+        severity: 'high',
+        message: `Alert: Class conducted by ${currentUser?.name || updatedSession.trainerUsername} at School ${updatedSession.schoolCode}. Remarks: "${remarks || 'None'}"`,
+        programme: updatedSession.programme,
+        schoolCode: updatedSession.schoolCode,
+        createdAt: new Date().toISOString(),
+        isResolved: false
+      };
+      db.addAlert(notification);
+    }
+
+    // Dispatch global real-time event
+    window.dispatchEvent(new Event('omp_session_conducted_update'));
     
     // Audit update student attendance rates dynamically
     if (confirmStatus === 'Completed') {
@@ -556,6 +587,17 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                               onClick={() => setActivePhotoUrl(session.photoUrl || null)}
                             />
                           </div>
+                        </div>
+                      )}
+
+                      {(session.status === 'Completed' || session.status === 'Conducted') && (
+                        <div className="mt-3 space-y-1 text-[10px] text-slate-500 font-semibold border-t border-slate-200 dark:border-dark-border/40 pt-2 w-full">
+                          {session.conductedBy && (
+                            <span className="block">Conducted By: <span className="text-slate-900 dark:text-white font-bold">{session.conductedBy}</span></span>
+                          )}
+                          {session.remarks && (
+                            <span className="block italic text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border p-1.5 rounded">Remarks: "{session.remarks}"</span>
+                          )}
                         </div>
                       )}
                     </div>

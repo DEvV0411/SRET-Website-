@@ -52,7 +52,7 @@ export const App: React.FC = () => {
       db.pullAllFromFirestore();
       db.setupRealtimeListeners();
     }
-  }, [currentUser]);
+  }, [currentUser, isOnline]);
 
   // Return Login if unauthenticated
   if (!currentUser) {
