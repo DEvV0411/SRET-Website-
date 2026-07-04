@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { Session, School, Student, ProgrammeName, SessionStatus, SystemAlert } from '../types';
+import type { Session, School, Student, ProgrammeName, SessionStatus, SystemAlert } from '../types';
 import { Calendar, Play, CheckCircle, XCircle, MapPin, Camera, AlertCircle, RefreshCw, UploadCloud, Trash, X } from 'lucide-react';
 
 interface SessionModuleProps {

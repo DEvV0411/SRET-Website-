@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { CounsellingRecord, Student } from '../types';
+import type { CounsellingRecord, Student } from '../types';
 import { HeartHandshake, Calendar, Plus, UserPlus, Clipboard, CheckCircle2 } from 'lucide-react';
 
 export const CounsellingModule: React.FC = () => {

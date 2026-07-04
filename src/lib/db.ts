@@ -1,7 +1,8 @@
-import { 
+import type { 
   User, Student, School, Session, LessonPlan, 
   CounsellingRecord, InventoryItem, TransportRoute, 
-  MonitoringVisit, SystemAlert, SyncItem, TimetableEntry, ActivityLog 
+  MonitoringVisit, SystemAlert, SyncItem, TimetableEntry, ActivityLog,
+  DriverDetails, VehicleDetails, DriverDailyEntry, TrainerReimbursement, WeeklySubmissionStatus
 } from '../types';
 import { firestoreDb, isFirebaseConfigured } from './firebase';
 import { doc, setDoc, deleteDoc, writeBatch, collection, getDocs, onSnapshot } from 'firebase/firestore';
@@ -262,6 +263,30 @@ const SEED_USERS: User[] = [
     isActive: true,
     password: 'manishapass123',
     permissions: ['View Students', 'View Attendance', 'Mark Attendance'],
+    activityLogs: []
+  },
+  {
+    username: 'driver.karsan',
+    name: 'Karsanbhai Rabari (Driver)',
+    role: 'driver',
+    assignedProgramme: 'All',
+    assignedSchools: [],
+    assignedDistricts: [],
+    isActive: true,
+    password: 'password123',
+    permissions: ['View Driver Dashboard', 'Log Trips'],
+    activityLogs: []
+  },
+  {
+    username: 'driver.sanjay',
+    name: 'Sanjay Tadvi (Driver)',
+    role: 'driver',
+    assignedProgramme: 'All',
+    assignedSchools: [],
+    assignedDistricts: [],
+    isActive: true,
+    password: 'password123',
+    permissions: ['View Driver Dashboard', 'Log Trips'],
     activityLogs: []
   }
 ];
@@ -668,6 +693,116 @@ const SEED_TRANSPORT: TransportRoute[] = [
   }
 ];
 
+const SEED_DRIVERS: DriverDetails[] = [
+  {
+    id: 'driver.karsan',
+    name: 'Karsanbhai Rabari',
+    mobileNumber: '+91 99778 86633',
+    address: 'Rabari Vas, Ahmedabad',
+    emergencyContact: '+91 99778 86600',
+    aadhaarUrl: 'Simulated Aadhaar uploaded',
+    licenceUrl: 'Simulated DL uploaded'
+  },
+  {
+    id: 'driver.sanjay',
+    name: 'Sanjay Tadvi',
+    mobileNumber: '+91 99112 23344',
+    address: 'Tadvi Faliya, Surendranagar',
+    emergencyContact: '+91 99112 23300',
+    aadhaarUrl: 'Simulated Aadhaar uploaded',
+    licenceUrl: 'Simulated DL uploaded'
+  }
+];
+
+const SEED_VEHICLES: VehicleDetails[] = [
+  {
+    id: 'GJ-01-XX-9900',
+    vehicleNumber: 'GJ-01-XX-9900',
+    vehicleType: 'Permanent',
+    insuranceDetails: 'Insurance Valid (Exp: 2026-10-25)',
+    rcDetails: 'RC Registered & Active',
+    pucDetails: 'PUC Valid (Exp: 2026-12-15)',
+    serviceDueDate: '2026-09-15'
+  },
+  {
+    id: 'GJ-13-ZZ-1234',
+    vehicleNumber: 'GJ-13-ZZ-1234',
+    vehicleType: 'Permanent',
+    insuranceDetails: 'Insurance Valid (Exp: 2027-01-10)',
+    rcDetails: 'RC Active',
+    pucDetails: 'PUC Valid (Exp: 2026-08-30)',
+    serviceDueDate: '2026-08-10'
+  },
+  {
+    id: 'GJ-23-YY-7788',
+    vehicleNumber: 'GJ-23-YY-7788',
+    vehicleType: 'Rental',
+    insuranceDetails: 'Provided by Rental Vendor',
+    rcDetails: 'Rental RC Active',
+    pucDetails: 'PUC Valid (Exp: 2026-11-20)',
+    serviceDueDate: '2026-10-01',
+    vendorName: 'Gujarat Travels Agency',
+    vendorContact: '+91 99887 76655',
+    rentalAgreementDetails: 'Agreement #GTA-2026-04',
+    rentalCharges: 3500,
+    validityPeriod: '2026-12-31'
+  }
+];
+
+const SEED_DRIVER_ENTRIES: DriverDailyEntry[] = [
+  {
+    id: 'DE001',
+    driverUsername: 'driver.karsan',
+    driverName: 'Karsanbhai Rabari',
+    startOdometer: 12450,
+    endOdometer: 12620,
+    distance: 170,
+    petrolQuantity: 15,
+    fuelCost: 1425,
+    date: '2026-07-02',
+    vehicleId: 'GJ-01-XX-9900',
+    linkedTrainerUsername: 'trainer.rahul',
+    linkedTrainerName: 'Rahul Parmar',
+    vertical: 'Pre-Vocational'
+  }
+];
+
+const SEED_REIMBURSEMENTS: TrainerReimbursement[] = [
+  {
+    id: 'RE001',
+    trainerUsername: 'trainer.rahul',
+    trainerName: 'Rahul Parmar',
+    date: '2026-07-01',
+    startLocation: 'Valsad Office',
+    endLocation: 'Khanda Primary school',
+    distance: 45,
+    petrolQuantity: 4,
+    fuelCost: 380,
+    purpose: 'Deliver Pre-Vocational woodcraft kits',
+    vertical: 'Pre-Vocational',
+    status: 'Pending',
+    remarks: 'Bus strike in Valsad taluka, used personal bike.'
+  }
+];
+
+const SEED_WEEKLY_SUBMISSIONS: WeeklySubmissionStatus[] = [
+  {
+    id: 'WS001',
+    username: 'trainer.rahul',
+    weekEndDate: '2026-07-05',
+    status: 'Pending',
+    type: 'trainer'
+  },
+  {
+    id: 'WS002',
+    username: 'driver.karsan',
+    weekEndDate: '2026-07-05',
+    status: 'Completed',
+    submittedAt: '2026-07-03T18:00:00Z',
+    type: 'driver'
+  }
+];
+
 const SEED_ALERTS: SystemAlert[] = [
   {
     id: 'ALT001',
@@ -883,6 +1018,21 @@ class OmpDatabase {
     if (!localStorage.getItem('omp_monitoring')) {
       localStorage.setItem('omp_monitoring', JSON.stringify(SEED_MONITORING));
     }
+    if (!localStorage.getItem('omp_drivers')) {
+      localStorage.setItem('omp_drivers', JSON.stringify(SEED_DRIVERS));
+    }
+    if (!localStorage.getItem('omp_vehicles')) {
+      localStorage.setItem('omp_vehicles', JSON.stringify(SEED_VEHICLES));
+    }
+    if (!localStorage.getItem('omp_driver_entries')) {
+      localStorage.setItem('omp_driver_entries', JSON.stringify(SEED_DRIVER_ENTRIES));
+    }
+    if (!localStorage.getItem('omp_reimbursements')) {
+      localStorage.setItem('omp_reimbursements', JSON.stringify(SEED_REIMBURSEMENTS));
+    }
+    if (!localStorage.getItem('omp_weekly_submissions')) {
+      localStorage.setItem('omp_weekly_submissions', JSON.stringify(SEED_WEEKLY_SUBMISSIONS));
+    }
     
     // Always update or merge timetable entries to keep layouts up-to-date
     const existingTimetable = localStorage.getItem('omp_timetable') 
@@ -957,7 +1107,12 @@ class OmpDatabase {
       'omp_monitoring': 'monitoring',
       'omp_alerts': 'alerts',
       'omp_timetable': 'timetable',
-      'omp_audit_logs': 'audit_logs'
+      'omp_audit_logs': 'audit_logs',
+      'omp_drivers': 'drivers',
+      'omp_vehicles': 'vehicles',
+      'omp_driver_entries': 'driver_entries',
+      'omp_reimbursements': 'reimbursements',
+      'omp_weekly_submissions': 'weekly_submissions'
     };
     return mapping[tableName] || tableName.replace('omp_', '');
   }
@@ -966,6 +1121,11 @@ class OmpDatabase {
     if (tableName === 'omp_users') return data.username;
     if (tableName === 'omp_schools') return data.code;
     if (tableName === 'omp_students') return data.studentId;
+    if (tableName === 'omp_drivers') return data.id;
+    if (tableName === 'omp_vehicles') return data.id;
+    if (tableName === 'omp_driver_entries') return data.id;
+    if (tableName === 'omp_reimbursements') return data.id;
+    if (tableName === 'omp_weekly_submissions') return data.id;
     return data.id || data.username || data.studentId || data.code;
   }
 
@@ -1288,6 +1448,126 @@ class OmpDatabase {
     }
   }
 
+  // Drivers
+  public getDrivers(): DriverDetails[] {
+    return this.getTable<DriverDetails>('omp_drivers');
+  }
+
+  public saveDriver(driver: DriverDetails) {
+    const drivers = this.getDrivers();
+    const index = drivers.findIndex(d => d.id === driver.id);
+    if (index >= 0) {
+      drivers[index] = driver;
+      this.queueSyncItem('omp_drivers', 'update', driver);
+    } else {
+      drivers.push(driver);
+      this.queueSyncItem('omp_drivers', 'insert', driver);
+    }
+    this.saveTable('omp_drivers', drivers);
+    window.dispatchEvent(new Event('omp_db_pulled'));
+  }
+
+  // Vehicles
+  public getVehicles(): VehicleDetails[] {
+    return this.getTable<VehicleDetails>('omp_vehicles');
+  }
+
+  public saveVehicle(vehicle: VehicleDetails) {
+    const vehicles = this.getVehicles();
+    const index = vehicles.findIndex(v => v.id === vehicle.id);
+    if (index >= 0) {
+      vehicles[index] = vehicle;
+      this.queueSyncItem('omp_vehicles', 'update', vehicle);
+    } else {
+      vehicles.push(vehicle);
+      this.queueSyncItem('omp_vehicles', 'insert', vehicle);
+    }
+    this.saveTable('omp_vehicles', vehicles);
+    window.dispatchEvent(new Event('omp_db_pulled'));
+  }
+
+  // Driver Daily Entries
+  public getDriverEntries(): DriverDailyEntry[] {
+    return this.getTable<DriverDailyEntry>('omp_driver_entries');
+  }
+
+  public saveDriverEntry(entry: DriverDailyEntry) {
+    const entries = this.getDriverEntries();
+    const index = entries.findIndex(e => e.id === entry.id);
+    if (index >= 0) {
+      entries[index] = entry;
+      this.queueSyncItem('omp_driver_entries', 'update', entry);
+    } else {
+      entries.push(entry);
+      this.queueSyncItem('omp_driver_entries', 'insert', entry);
+    }
+    this.saveTable('omp_driver_entries', entries);
+    window.dispatchEvent(new Event('omp_db_pulled'));
+  }
+
+  // Trainer Reimbursements
+  public getReimbursements(): TrainerReimbursement[] {
+    return this.getTable<TrainerReimbursement>('omp_reimbursements');
+  }
+
+  public saveReimbursement(reimbursement: TrainerReimbursement) {
+    const reimbursements = this.getReimbursements();
+    const index = reimbursements.findIndex(r => r.id === reimbursement.id);
+    if (index >= 0) {
+      reimbursements[index] = reimbursement;
+      this.queueSyncItem('omp_reimbursements', 'update', reimbursement);
+    } else {
+      reimbursements.push(reimbursement);
+      this.queueSyncItem('omp_reimbursements', 'insert', reimbursement);
+    }
+    this.saveTable('omp_reimbursements', reimbursements);
+    window.dispatchEvent(new Event('omp_db_pulled'));
+  }
+
+  // Weekly Submissions
+  public getWeeklySubmissions(): WeeklySubmissionStatus[] {
+    return this.getTable<WeeklySubmissionStatus>('omp_weekly_submissions');
+  }
+
+  public saveWeeklySubmission(submission: WeeklySubmissionStatus) {
+    const submissions = this.getWeeklySubmissions();
+    const index = submissions.findIndex(s => s.id === submission.id);
+    if (index >= 0) {
+      submissions[index] = submission;
+      this.queueSyncItem('omp_weekly_submissions', 'update', submission);
+    } else {
+      submissions.push(submission);
+      this.queueSyncItem('omp_weekly_submissions', 'insert', submission);
+    }
+    this.saveTable('omp_weekly_submissions', submissions);
+    window.dispatchEvent(new Event('omp_db_pulled'));
+  }
+
+  // Trainer Location updates
+  public updateTrainerLocation(username: string, lat: number, lng: number) {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.username === username);
+    if (index >= 0) {
+      const user = users[index];
+      const timestamp = new Date().toISOString();
+      const newLoc = { lat, lng, timestamp };
+      
+      const history = user.locationHistory || [];
+      const updatedHistory = [newLoc, ...history].slice(0, 20); // Keep last 20 coordinates
+
+      const updatedUser = {
+        ...user,
+        lastKnownLocation: newLoc,
+        locationHistory: updatedHistory
+      };
+      
+      users[index] = updatedUser;
+      this.saveTable('omp_users', users);
+      this.queueSyncItem('omp_users', 'update', updatedUser);
+      window.dispatchEvent(new Event('omp_db_pulled'));
+    }
+  }
+
   // Counselling
   public getCounselling(): CounsellingRecord[] {
     return this.getTable<CounsellingRecord>('omp_counselling');
@@ -1471,7 +1751,12 @@ class OmpDatabase {
       { name: 'omp_monitoring', key: 'id' },
       { name: 'omp_alerts', key: 'id' },
       { name: 'omp_timetable', key: 'id' },
-      { name: 'omp_audit_logs', key: 'id' }
+      { name: 'omp_audit_logs', key: 'id' },
+      { name: 'omp_drivers', key: 'id' },
+      { name: 'omp_vehicles', key: 'id' },
+      { name: 'omp_driver_entries', key: 'id' },
+      { name: 'omp_reimbursements', key: 'id' },
+      { name: 'omp_weekly_submissions', key: 'id' }
     ];
 
     for (const table of tables) {
@@ -1502,7 +1787,12 @@ class OmpDatabase {
       { name: 'omp_monitoring', key: 'id' },
       { name: 'omp_alerts', key: 'id' },
       { name: 'omp_timetable', key: 'id' },
-      { name: 'omp_audit_logs', key: 'id' }
+      { name: 'omp_audit_logs', key: 'id' },
+      { name: 'omp_drivers', key: 'id' },
+      { name: 'omp_vehicles', key: 'id' },
+      { name: 'omp_driver_entries', key: 'id' },
+      { name: 'omp_reimbursements', key: 'id' },
+      { name: 'omp_weekly_submissions', key: 'id' }
     ];
 
     tables.forEach(table => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { Student, School, ProgrammeName } from '../types';
+import type { Student, School, ProgrammeName } from '../types';
 import { Search, Filter, Plus, ArrowUpRight, GraduationCap, Phone, MapPin, ClipboardList, BookOpen, AlertCircle } from 'lucide-react';
 
 export const StudentModule: React.FC = () => {

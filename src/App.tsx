@@ -11,15 +11,17 @@ import { MonitoringModule } from './components/MonitoringModule';
 import { ReportsModule } from './components/ReportsModule';
 import { UserManager } from './components/UserManager';
 import { LessonPlanModule } from './components/LessonPlanModule';
-import { PreVocationalModule } from './components/PreVocationalModule';
 import { AIAssistant } from './components/AIAssistant';
+import { VerticalModule } from './components/VerticalModule';
+import { PersonalDashboard } from './components/PersonalDashboard';
+import { TransportModule } from './components/TransportModule';
 import { Sparkles, HelpCircle, Bell, Wifi, WifiOff } from 'lucide-react';
 
 import { db } from './lib/db';
 
 export const App: React.FC = () => {
   const { currentUser, isOnline, syncQueueSize, t } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('personal_dashboard');
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   
   // Right-hand AI sidebar open state (Notion-AI style)
@@ -28,23 +30,57 @@ export const App: React.FC = () => {
   // Custom Toast notification states
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Listen for db custom notifications
   useEffect(() => {
     const handleToast = (e: Event) => {
-      const customEvent = e as CustomEvent<string>;
+      const customEvent = e as CustomEvent;
       setToastMessage(customEvent.detail);
-      
-      // Auto dismiss after 4 seconds
-      setTimeout(() => {
-        setToastMessage(null);
-      }, 4000);
+      setTimeout(() => setToastMessage(null), 3000);
     };
-
     window.addEventListener('omp_toast_message', handleToast);
     return () => {
       window.removeEventListener('omp_toast_message', handleToast);
     };
   }, []);
+
+  // Landing page redirection effect
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === 'super_admin') {
+        setActiveTab('dashboard');
+      } else {
+        setActiveTab('personal_dashboard');
+      }
+    }
+  }, [currentUser]);
+
+  // Trainer GPS position tracker
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== 'trainer') return;
+    if (!navigator.geolocation) {
+      console.warn('[GPS Tracker] Geolocation not supported.');
+      return;
+    }
+
+    console.log('[GPS Tracker] Watching trainer position:', currentUser.username);
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        db.updateTrainerLocation(currentUser.username, latitude, longitude);
+      },
+      (err) => {
+        console.warn('[GPS Tracker] Error:', err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [currentUser]);
 
   // Trigger automatic Firestore database sync pull on login/startup
   useEffect(() => {
@@ -66,36 +102,32 @@ export const App: React.FC = () => {
   // Component Router swapper
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'personal_dashboard':
+        return <PersonalDashboard />;
       case 'dashboard':
         return (
           <DashboardView 
             setActiveTab={setActiveTab} 
-            setSelectedSessionId={setSelectedSessionId} 
           />
         );
-      case 'students':
-        return <StudentModule />;
-      case 'sessions':
-        return (
-          <SessionModule 
-            selectedSessionId={selectedSessionId} 
-            setSelectedSessionId={setSelectedSessionId} 
-          />
-        );
+      case 'pre_vocational':
+        return <VerticalModule programme="Pre-Vocational" />;
+      case 'vocational':
+        return <VerticalModule programme="Vocational" />;
+      case 'udyam':
+        return <VerticalModule programme="Udyam" />;
+      case 'magic_touch':
+        return <VerticalModule programme="Magic Touch" />;
       case 'inventory':
         return <InventoryModule />;
+      case 'transport':
+        return <TransportModule />;
       case 'counselling':
         return <CounsellingModule />;
       case 'monitoring':
         return <MonitoringModule />;
-      case 'reports':
-        return <ReportsModule />;
       case 'users':
         return <UserManager />;
-      case 'lesson_plans':
-        return <LessonPlanModule />;
-      case 'pre_vocational':
-        return <PreVocationalModule />;
       default:
         return (
           <div className="py-12 text-center text-xs text-slate-500 bg-white border rounded">

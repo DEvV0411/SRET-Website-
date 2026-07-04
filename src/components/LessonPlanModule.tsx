@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { LessonPlan, ProgrammeName } from '../types';
+import type { LessonPlan, ProgrammeName } from '../types';
 import { 
   Plus, BookOpen, Film, FileText, Upload, Compass, 
   CheckCircle, ArrowUpRight, PlayCircle, Eye, Trash, RefreshCw 

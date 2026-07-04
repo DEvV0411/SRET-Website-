@@ -8,7 +8,8 @@ export type UserRole =
   | 'counsellor'
   | 'inventory_team'
   | 'transport_team'
-  | 'viewer';
+  | 'viewer'
+  | 'driver';
 
 export type ProgrammeName = 
   | 'Vocational'
@@ -37,6 +38,8 @@ export interface User {
   password?: string;
   lastLogin?: string;
   activityLogs: ActivityLog[];
+  lastKnownLocation?: { lat: number; lng: number; timestamp: string };
+  locationHistory?: { lat: number; lng: number; timestamp: string }[];
 }
 
 export interface ActivityLog {
@@ -226,4 +229,72 @@ export interface SyncItem {
   action: 'insert' | 'update' | 'delete';
   data: any;
   timestamp: number;
+}
+
+export interface DriverDetails {
+  id: string; // driver username
+  name: string;
+  mobileNumber: string;
+  address: string;
+  aadhaarUrl?: string; // base64/url
+  licenceUrl?: string; // base64/url
+  emergencyContact: string;
+}
+
+export interface VehicleDetails {
+  id: string; // vehicle number
+  vehicleNumber: string;
+  vehicleType: 'Permanent' | 'Rental';
+  insuranceDetails: string;
+  rcDetails: string;
+  pucDetails: string;
+  serviceDueDate: string;
+  // Rental specific fields:
+  vendorName?: string;
+  vendorContact?: string;
+  rentalAgreementDetails?: string;
+  rentalCharges?: number;
+  validityPeriod?: string;
+}
+
+export interface DriverDailyEntry {
+  id: string;
+  driverUsername: string;
+  driverName: string;
+  startOdometer: number;
+  endOdometer: number;
+  distance: number;
+  petrolQuantity: number;
+  fuelCost: number;
+  date: string;
+  vehicleId: string;
+  linkedTrainerUsername: string;
+  linkedTrainerName: string;
+  vertical: ProgrammeName;
+}
+
+export interface TrainerReimbursement {
+  id: string;
+  trainerUsername: string;
+  trainerName: string;
+  date: string;
+  startLocation: string;
+  endLocation: string;
+  distance: number;
+  petrolQuantity: number;
+  fuelCost: number;
+  purpose: string;
+  vertical: ProgrammeName;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  remarks?: string;
+  approvedBy?: string;
+}
+
+export interface WeeklySubmissionStatus {
+  id: string;
+  username: string;
+  weekEndDate: string; // e.g. "2026-07-05" (Sunday)
+  status: 'Pending' | 'Completed';
+  submittedAt?: string;
+  type: 'trainer' | 'driver';
 }

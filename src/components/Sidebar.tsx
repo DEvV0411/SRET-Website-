@@ -25,28 +25,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
   // List of all possible navigation items with permission gating rules
   const menuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', permission: 'View Students' }, // Everyone has access
-    { id: 'students', icon: Users, label: 'Students', permission: 'View Students' },
-    { id: 'schools', icon: School, label: 'Schools', permission: 'View Students' },
-    { id: 'sessions', icon: Calendar, label: 'Sessions', permission: 'View Students' },
-    { id: 'lesson_plans', icon: BookOpen, label: 'Lesson Plans', permission: 'View Students' },
-    { id: 'pre_vocational', icon: BookOpen, label: 'Pre Vocational' },
+    { id: 'personal_dashboard', icon: LayoutDashboard, label: 'Personal Dashboard' },
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Super Dashboard', role: 'super_admin' },
+    { id: 'pre_vocational', icon: BookOpen, label: 'Pre Vocational', vertical: 'Pre-Vocational' },
+    { id: 'vocational', icon: BookOpen, label: 'Vocational', vertical: 'Vocational' },
+    { id: 'udyam', icon: BookOpen, label: 'Udyam', vertical: 'Udyam' },
+    { id: 'magic_touch', icon: BookOpen, label: 'MagicTouch', vertical: 'Magic Touch' },
     { id: 'inventory', icon: Package, label: 'Inventory', permission: 'Manage Inventory' },
-    { id: 'transport', icon: Truck, label: 'Transport', permission: 'Manage Fleet' },
-    { id: 'counselling', icon: HeartHandshake, label: 'Counselling', role: 'counsellor' }, // Custom role block
+    { id: 'transport', icon: Truck, label: 'Transport' },
+    { id: 'counselling', icon: HeartHandshake, label: 'Counselling', role: 'counsellor' },
     { id: 'monitoring', icon: ShieldAlert, label: 'School Visits', role: 'programme_coordinator' },
-    { id: 'reports', icon: FileText, label: 'Reports', permission: 'View Reports' },
     { id: 'users', icon: Settings, label: 'User Manager', permission: 'Manage Users' },
   ];
 
-  // Filter items based on permissions/roles
+  // Filter items based on permissions/roles and vertical scoping
   const visibleItems = menuItems.filter(item => {
     // If super admin, has access to all
     if (currentUser.role === 'super_admin') return true;
-    
-    // If trainer, restrict strictly to Dashboard, Pre Vocational, and Lesson Plans
+
+    // Check vertical limitations
+    if (item.vertical) {
+      if (currentUser.role === 'trainer') {
+        return currentUser.assignedProgramme === item.vertical || currentUser.assignedProgramme === 'All';
+      }
+      if (currentUser.assignedProgramme !== 'All' && currentUser.assignedProgramme !== item.vertical) {
+        return false;
+      }
+    }
+
+    // Role-specific menu restrictions
+    if (currentUser.role === 'driver') {
+      return item.id === 'personal_dashboard' || item.id === 'transport';
+    }
+
     if (currentUser.role === 'trainer') {
-      return item.id === 'dashboard' || item.id === 'pre_vocational' || item.id === 'lesson_plans';
+      return item.id === 'personal_dashboard' || item.id === 'transport' || (item.vertical && (currentUser.assignedProgramme === item.vertical || currentUser.assignedProgramme === 'All'));
     }
     
     // Check permission gating
@@ -58,19 +71,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     return true;
   });
 
-  // Mobile navigation bottom list (primary actions for fast field workflows)
+  // Mobile navigation bottom list (primary actions)
   const mobilePrimaryItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-    { id: 'students', icon: Users, label: 'Students' },
-    { id: 'sessions', icon: Calendar, label: 'Sessions' },
-    { id: 'pre_vocational', icon: BookOpen, label: 'Pre Vocational' },
-    { id: 'lesson_plans', icon: BookOpen, label: 'Lesson Plans' },
+    { id: 'personal_dashboard', icon: LayoutDashboard, label: 'Home' },
+    { id: 'pre_vocational', icon: BookOpen, label: 'Pre-Voc', vertical: 'Pre-Vocational' },
+    { id: 'vocational', icon: BookOpen, label: 'Vocational', vertical: 'Vocational' },
+    { id: 'transport', icon: Truck, label: 'Transport' },
     { id: 'inventory', icon: Package, label: 'Inventory', permission: 'Manage Inventory' },
-    { id: 'reports', icon: FileText, label: 'Reports', permission: 'View Reports' },
   ].filter(item => {
     if (currentUser.role === 'super_admin') return true;
+    if (currentUser.role === 'driver') {
+      return item.id === 'personal_dashboard' || item.id === 'transport';
+    }
     if (currentUser.role === 'trainer') {
-      return item.id === 'dashboard' || item.id === 'pre_vocational' || item.id === 'lesson_plans';
+      return item.id === 'personal_dashboard' || item.id === 'transport' || (item.vertical && (currentUser.assignedProgramme === item.vertical || currentUser.assignedProgramme === 'All'));
     }
     if (item.permission && !hasPermission(item.permission)) return false;
     return true;

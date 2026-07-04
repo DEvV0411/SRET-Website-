@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { Session, TimetableEntry, ActivityLog, School, SystemAlert } from '../types';
+import type { Session, TimetableEntry, ActivityLog, School, SystemAlert } from '../types';
 import { 
   Database, Calendar, Users, School as SchoolIcon, Play, 
   CheckCircle, ShieldCheck, ClipboardCheck, ArrowUpRight, 

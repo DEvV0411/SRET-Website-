@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { MonitoringVisit, School } from '../types';
+import type { MonitoringVisit, School } from '../types';
 import { ShieldCheck, Plus, MapPin, AlertCircle, FileText, CheckSquare, Star } from 'lucide-react';
 
 export const MonitoringModule: React.FC = () => {

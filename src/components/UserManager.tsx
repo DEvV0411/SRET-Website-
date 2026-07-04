@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import { User, UserRole, ProgrammeName } from '../types';
+import type { User, UserRole, ProgrammeName } from '../types';
 import { UserPlus, Shield, Eye, Settings, RefreshCw, KeyRound, Ban, CheckCircle2, Database, Wifi } from 'lucide-react';
 import { isFirebaseConfigured } from '../lib/firebase';
 
@@ -102,6 +102,8 @@ export const UserManager: React.FC = () => {
       defaultPermissions = ['Manage Inventory', 'View Reports'];
     } else if (role === 'transport_team') {
       defaultPermissions = ['Manage Fleet', 'View Reports'];
+    } else if (role === 'driver') {
+      defaultPermissions = ['View Driver Dashboard', 'Log Trips'];
     }
 
     const newUser: User = {
@@ -459,6 +461,7 @@ export const UserManager: React.FC = () => {
                     <option value="inventory_team">Inventory Team</option>
                     <option value="transport_team">Transport Team</option>
                     <option value="viewer">Viewer (Read-only)</option>
+                    <option value="driver">Driver</option>
                   </select>
                 </div>
 

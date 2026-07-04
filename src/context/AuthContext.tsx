@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole, ProgrammeName } from '../types';
+import type { User, UserRole, ProgrammeName } from '../types';
 import db from '../lib/db';
 import { auth, firestoreDb, isFirebaseConfigured } from '../lib/firebase';
 import { 
@@ -34,7 +34,15 @@ const DICTIONARY: Record<string, Record<'en' | 'gu', string>> = {
   'synced_notice': { en: 'System Synced', gu: 'સિસ્ટમ સમન્વયિત છે' },
   'logout': { en: 'Sign Out', gu: 'લૉગ આઉટ' },
   'pre_vocational': { en: 'Pre Vocational', gu: 'પૂર્વ-વ્યવસાયિક' },
-  'pre vocational': { en: 'Pre Vocational', gu: 'પૂર્વ-વ્યવસાયિક' }
+  'pre vocational': { en: 'Pre Vocational', gu: 'પૂર્વ-વ્યવસાયિક' },
+  'personal_dashboard': { en: 'Personal Dashboard', gu: 'વ્યક્તિગત ડેશબોર્ડ' },
+  'personal dashboard': { en: 'Personal Dashboard', gu: 'વ્યક્તિગત ડેશબોર્ડ' },
+  'super_dashboard': { en: 'Super Dashboard', gu: 'મુખ્ય ડેશબોર્ડ' },
+  'super dashboard': { en: 'Super Dashboard', gu: 'મુખ્ય ડેશબોર્ડ' },
+  'vocational': { en: 'Vocational', gu: 'વ્યવસાયિક (વોકેશનલ)' },
+  'udyam': { en: 'Udyam', gu: 'ઉદ્યમ' },
+  'magic_touch': { en: 'MagicTouch', gu: 'મેજિક ટચ' },
+  'magictouch': { en: 'MagicTouch', gu: 'મેજિક ટચ' }
 };
 
 interface AuthContextType {
