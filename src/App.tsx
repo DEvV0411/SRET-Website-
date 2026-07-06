@@ -118,6 +118,15 @@ export const App: React.FC = () => {
         return <VerticalModule programme="Udyam" />;
       case 'magic_touch':
         return <VerticalModule programme="Magic Touch" />;
+      case 'sessions':
+        return (
+          <SessionModule 
+            selectedSessionId={selectedSessionId} 
+            setSelectedSessionId={setSelectedSessionId} 
+          />
+        );
+      case 'lesson_plans':
+        return <LessonPlanModule />;
       case 'inventory':
         return <InventoryModule />;
       case 'transport':

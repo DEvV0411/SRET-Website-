@@ -31,6 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'vocational', icon: BookOpen, label: 'Vocational', vertical: 'Vocational' },
     { id: 'udyam', icon: BookOpen, label: 'Udyam', vertical: 'Udyam' },
     { id: 'magic_touch', icon: BookOpen, label: 'MagicTouch', vertical: 'Magic Touch' },
+    { id: 'sessions', icon: Calendar, label: 'sessions' },
+    { id: 'lesson_plans', icon: BookOpen, label: 'lesson_plans' },
     { id: 'inventory', icon: Package, label: 'Inventory', permission: 'Manage Inventory' },
     { id: 'transport', icon: Truck, label: 'Transport' },
     { id: 'counselling', icon: HeartHandshake, label: 'Counselling', role: 'counsellor' },
@@ -48,9 +50,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       return item.id === 'personal_dashboard' || item.id === 'transport';
     }
 
-    // Trainer: only personal dashboard + their assigned vertical
+    // Trainer: only personal dashboard + their assigned vertical + sessions + lesson_plans
     if (currentUser.role === 'trainer') {
-      if (item.id === 'personal_dashboard') return true;
+      if (item.id === 'personal_dashboard' || item.id === 'sessions' || item.id === 'lesson_plans') return true;
       if (item.vertical) {
         return currentUser.assignedProgramme === 'All' || currentUser.assignedProgramme === item.vertical;
       }
@@ -72,9 +74,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       return item.id === 'personal_dashboard' || item.id === 'transport';
     }
 
-    // Programme head / coordinator: personal dashboard + their assigned vertical only
+    // Programme head / coordinator: personal dashboard + assigned vertical + sessions + lesson_plans
     if (currentUser.role === 'programme_head' || currentUser.role === 'programme_coordinator') {
-      if (item.id === 'personal_dashboard') return true;
+      if (item.id === 'personal_dashboard' || item.id === 'sessions' || item.id === 'lesson_plans') return true;
       if (item.id === 'monitoring' && currentUser.role === 'programme_coordinator') return true;
       if (item.vertical) {
         return currentUser.assignedProgramme === 'All' || currentUser.assignedProgramme === item.vertical;

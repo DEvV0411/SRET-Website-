@@ -29,6 +29,7 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
   const [gpsCoords, setGpsCoords] = useState<{lat: number, lng: number} | null>(null);
   const [isCapturingGps, setIsCapturingGps] = useState(false);
   const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
+  const [selectedLessonPlanId, setSelectedLessonPlanId] = useState('');
 
   useEffect(() => {
     loadSessions();
@@ -75,6 +76,7 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
     setRemarks('');
     setPhotoBlob(null);
     setGpsCoords(null);
+    setSelectedLessonPlanId(session.lessonPlanId || '');
     
     // Default all students at this school to "Present" for 1-tap convenience
     const schoolStudents = db.getStudents().filter(s => s.schoolCode === session.schoolCode);
@@ -182,7 +184,8 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
       locationCoords: gpsCoords || undefined,
       conductedBy: activeSession.conductedBy || (confirmStatus === 'Completed' || confirmStatus === 'Conducted' ? currentUser?.name : undefined),
       conductedAt: activeSession.conductedAt || (confirmStatus === 'Completed' || confirmStatus === 'Conducted' ? new Date().toISOString() : undefined),
-      studentsPresentCount: presentStudentIds.length
+      studentsPresentCount: presentStudentIds.length,
+      lessonPlanId: selectedLessonPlanId
     };
 
     const previous = JSON.stringify(activeSession);
@@ -458,6 +461,29 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                       ) : (
                         <span>GPS check failed</span>
                       )}
+                    </div>
+
+                    {/* Select Lesson Plan (LPS) */}
+                    <div>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                        Select Lesson Plan (LPS) *
+                      </span>
+                      <select
+                        value={selectedLessonPlanId}
+                        onChange={(e) => setSelectedLessonPlanId(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded text-[11px] outline-none focus:ring-1 focus:ring-primary focus:border-primary text-slate-900 dark:text-white font-semibold transition-all"
+                        required={confirmStatus === 'Completed'}
+                      >
+                        <option value="">-- Choose Lesson Plan --</option>
+                        {db.getLessonPlans()
+                          .filter(p => p.programme === activeSession.programme)
+                          .map(p => (
+                            <option key={p.id} value={p.id}>
+                              {p.chapter} ({p.subject})
+                            </option>
+                          ))
+                        }
+                      </select>
                     </div>
 
                     {/* Remarks field */}

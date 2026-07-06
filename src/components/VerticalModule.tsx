@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Users, BookOpen, Package, FileText, Plus, Search, Filter, 
   ShieldCheck, ClipboardCheck, ArrowUpRight, GraduationCap, Phone, MapPin, 
   ClipboardList, AlertTriangle, CheckCircle, Calendar, RefreshCw, Eye,
-  School as SchoolIcon
+  School as SchoolIcon, Camera, UploadCloud, Trash
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -48,6 +48,9 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
   const [conductPresentCount, setConductPresentCount] = useState(20);
   const [conductRemarks, setConductRemarks] = useState('');
   const [conductIssues, setConductIssues] = useState('');
+  const [conductLessonPlanId, setConductLessonPlanId] = useState('');
+  const [conductPhotoBlob, setConductPhotoBlob] = useState<string | null>(null);
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
 
   // New Student state
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
@@ -187,7 +190,9 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
       conductedBy: currentUser?.name || 'Trainer',
       studentsPresentCount: conductPresentCount,
       remarks: conductRemarks,
-      issuesFaced: conductIssues
+      issuesFaced: conductIssues,
+      lessonPlanId: conductLessonPlanId,
+      photoUrl: conductPhotoBlob || undefined
     };
 
     db.saveSession(updated);
@@ -209,7 +214,49 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
     setActiveConductSession(null);
     setConductRemarks('');
     setConductIssues('');
+    setConductLessonPlanId('');
+    setConductPhotoBlob(null);
     loadData();
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        const MAX_DIM = 800;
+        if (width > height) {
+          if (width > MAX_DIM) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          }
+        } else {
+          if (height > MAX_DIM) {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          setConductPhotoBlob(compressedBase64);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   // Verify / Verify Complete Actions
@@ -602,13 +649,15 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
                                 date: new Date().toISOString().split('T')[0],
                                 time: '10:00 AM',
                                 trainerUsername: currentUser?.username || 'trainer',
-                                subject: 'LP Session',
-                                lessonPlanId: 'LP101',
+                                subject: allotment.trade || 'LP Session',
+                                lessonPlanId: '',
                                 status: 'Scheduled',
                                 attendancePresent: [],
                                 attendanceAbsent: []
                               };
                               setActiveConductSession(mockSess);
+                              setConductLessonPlanId('');
+                              setConductPhotoBlob(null);
                               setShowMarkConductedModal(true);
                             }}
                             className="btn-primary py-0.5 px-2 text-[10px]"
@@ -760,7 +809,9 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
 
                         <div className="mt-3 text-[11px] space-y-1 font-semibold text-slate-700 dark:text-slate-355">
                           <p>
-                            <span className="text-slate-400">Lesson Plan:</span> {sess.lessonPlanId} ({sess.subject})
+                            <span className="text-slate-400">Lesson Plan:</span> {
+                               db.getLessonPlans().find(p => p.id === sess.lessonPlanId)?.chapter || sess.lessonPlanId || 'N/A'
+                             } ({sess.subject})
                           </p>
                           {sess.conductedBy && (
                             <p>
@@ -773,6 +824,19 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
                             </p>
                           )}
                         </div>
+                        {sess.photoUrl && (
+                           <div className="mt-2.5">
+                             <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Classroom Photo</span>
+                             <div className="relative rounded overflow-hidden border border-slate-200 dark:border-dark-border max-h-[80px] shadow-sm">
+                               <img 
+                                 src={sess.photoUrl} 
+                                 alt="Classroom Observation" 
+                                 className="w-full h-16 object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+                                 onClick={() => setActivePhotoUrl(sess.photoUrl || null)}
+                               />
+                             </div>
+                           </div>
+                         )}
                       </div>
 
                       {/* Admin action transitions */}
@@ -965,6 +1029,68 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
               </div>
 
               <div>
+                <label className="block text-slate-500 mb-1">Select Lesson Plan (LPS) *</label>
+                <select
+                  value={conductLessonPlanId}
+                  onChange={(e) => setConductLessonPlanId(e.target.value)}
+                  className="input-field"
+                  required
+                >
+                  <option value="">-- Choose Lesson Plan --</option>
+                  {db.getLessonPlans()
+                    .filter(p => p.programme === programme)
+                    .map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.chapter} ({p.subject})
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 mb-1">Classroom Observation Photo</label>
+                {conductPhotoBlob ? (
+                  <div className="relative rounded overflow-hidden border border-slate-300 dark:border-slate-600 max-w-[150px] mx-auto shadow">
+                    <img src={conductPhotoBlob} alt="Classroom preview" className="w-full h-24 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setConductPhotoBlob(null)}
+                      className="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-750 text-white rounded-full transition-all flex items-center justify-center border border-white"
+                      title="Remove Photo"
+                    >
+                      <Trash size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <label className="relative overflow-hidden flex-1 flex flex-col items-center justify-center py-2 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded font-bold cursor-pointer gap-1">
+                      <Camera size={14} />
+                      <span>Take Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handlePhotoUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                    </label>
+
+                    <label className="relative overflow-hidden flex-1 flex flex-col items-center justify-center py-2 border border-dashed border-slate-300 dark:border-dark-border hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary rounded font-bold cursor-pointer gap-1">
+                      <UploadCloud size={14} />
+                      <span>Upload File</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <div>
                 <label className="block text-slate-500 mb-1">Trainer Remarks *</label>
                 <textarea
                   required
@@ -1050,6 +1176,28 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
                 <p className="mt-0.5 font-medium">{selectedStudent.village}, {selectedStudent.taluka}, {selectedStudent.district}</p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox modal overlay */}
+      {activePhotoUrl && (
+        <div 
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 cursor-pointer animate-fadeIn"
+          onClick={() => setActivePhotoUrl(null)}
+        >
+          <div className="relative max-w-3xl max-h-[85vh] bg-white dark:bg-dark-surface p-2 rounded-lg border border-slate-200 dark:border-dark-border shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setActivePhotoUrl(null)}
+              className="absolute top-4 right-4 bg-black/60 hover:bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all text-xs z-10"
+            >
+              ✕
+            </button>
+            <img 
+              src={activePhotoUrl} 
+              alt="Classroom Observation Fullscreen" 
+              className="max-w-full max-h-[80vh] object-contain rounded"
+            />
           </div>
         </div>
       )}
