@@ -624,8 +624,12 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-dark-border font-medium text-slate-700 dark:text-slate-350">
                 {timetable.map(allotment => {
+                  const matchingSch = schools.find(s => s.name.toLowerCase().trim() === allotment.schoolName.toLowerCase().trim()) ||
+                                      db.getSchools().find(s => s.name.toLowerCase().trim() === allotment.schoolName.toLowerCase().trim());
+                  const schoolCode = matchingSch ? matchingSch.code : (allotment.schoolCode || 'S101');
+
                   const reportedSession = sessions.find(
-                    s => s.schoolCode === allotment.schoolCode && 
+                    s => s.schoolCode === schoolCode && 
                          s.date === new Date().toISOString().split('T')[0]
                   );
                   return (
@@ -645,7 +649,7 @@ export const VerticalModule: React.FC<VerticalModuleProps> = ({ programme }) => 
                               const mockSess: Session = {
                                 id: 'SES_' + Math.floor(100 + Math.random() * 900),
                                 programme,
-                                schoolCode: allotment.schoolCode || 'S101',
+                                schoolCode: schoolCode,
                                 date: new Date().toISOString().split('T')[0],
                                 time: '10:00 AM',
                                 trainerUsername: currentUser?.username || 'trainer',
