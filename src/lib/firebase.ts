@@ -1,6 +1,6 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -26,18 +26,14 @@ if (isFirebaseConfigured) {
   try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
-    firestoreDb = getFirestore(app);
+    
+    // Enable local Firestore offline replication cache via modern initialization settings
+    firestoreDb = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
 
-    // Enable local Firestore offline replication cache
-    if (typeof window !== 'undefined') {
-      enableIndexedDbPersistence(firestoreDb).catch((err) => {
-        if (err.code === 'failed-precondition') {
-          console.warn('[Firebase] Offline persistence failed: multiple tabs open.');
-        } else if (err.code === 'unimplemented') {
-          console.warn('[Firebase] Browser does not support offline persistence.');
-        }
-      });
-    }
     console.log('[Firebase] Initialized cloud client successfully.');
   } catch (error) {
     console.error('[Firebase] Init error:', error);
