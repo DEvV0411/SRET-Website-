@@ -1147,7 +1147,8 @@ class OmpDatabase {
     if (action === 'delete') {
       await deleteDoc(doc(firestoreDb, collectionName, docId));
     } else {
-      await setDoc(doc(firestoreDb, collectionName, docId), data);
+      const cleanData = JSON.parse(JSON.stringify(data));
+      await setDoc(doc(firestoreDb, collectionName, docId), cleanData);
     }
   }
 
@@ -1198,7 +1199,8 @@ class OmpDatabase {
           if (item.action === 'delete') {
             batch.delete(docRef);
           } else {
-            batch.set(docRef, item.data);
+            const cleanData = JSON.parse(JSON.stringify(item.data));
+            batch.set(docRef, cleanData);
           }
           operationsCount++;
         }
