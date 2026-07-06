@@ -58,6 +58,7 @@ interface AuthContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   syncQueueSize: number;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [language, setLanguageState] = useState<'en' | 'gu'>('en');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [syncQueueSize, setSyncQueueSize] = useState<number>(db.getSyncQueue().length);
+  const [loading, setLoading] = useState(true);
 
   // Initialize theme, language, and auto-login
   useEffect(() => {
@@ -113,8 +115,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch (err) {
             console.error('[Firebase Auth] Error retrieving profile state:', err);
           }
+          setLoading(false);
         } else {
           setCurrentUser(null);
+          setLoading(false);
         }
       });
     } else {
@@ -127,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCurrentUser(freshUser);
         }
       }
+      setLoading(false);
     }
 
     return () => {
@@ -333,7 +338,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       t,
       theme,
       toggleTheme,
-      syncQueueSize
+      syncQueueSize,
+      loading
     }}>
       {children}
     </AuthContext.Provider>

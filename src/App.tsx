@@ -20,7 +20,7 @@ import { Sparkles, HelpCircle, Bell, Wifi, WifiOff } from 'lucide-react';
 import { db } from './lib/db';
 
 export const App: React.FC = () => {
-  const { currentUser, isOnline, syncQueueSize, t } = useAuth();
+  const { currentUser, isOnline, syncQueueSize, t, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('personal_dashboard');
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   
@@ -93,6 +93,23 @@ export const App: React.FC = () => {
     };
     syncAndPull();
   }, [currentUser, isOnline]);
+
+  // Return Loading screen if auth session check is active
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 text-slate-100 font-body relative overflow-hidden px-4">
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="flex flex-col items-center relative z-10 animate-pulse">
+          <div className="w-16 h-16 rounded-md bg-gradient-to-tr from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20 mb-4">
+            <span className="text-white text-3xl font-bold font-heading">⚡</span>
+          </div>
+          <h2 className="text-lg font-bold text-white font-heading">Loading OMP MIS...</h2>
+          <p className="text-xs text-slate-500 mt-1 font-semibold">Verifying secure database session</p>
+        </div>
+      </div>
+    );
+  }
 
   // Return Login if unauthenticated
   if (!currentUser) {
