@@ -432,468 +432,31 @@ const SEED_SCHOOLS: School[] = [
   { code: 'S_PV_71', name: 'Nevri pra school', principalName: 'Shri S. Dutt', principalContact: '+91 99000 11171', village: 'Nevri', taluka: 'Dharampur', district: 'Valsad', studentStrength: 95, sessionsTarget: 20, sessionsConducted: 0, runningProgrammes: ['Pre-Vocational'] }
 ];
 
-const SEED_STUDENTS: Student[] = [
-  {
-    studentId: 'STU001',
-    name: 'Hitesh Makwana',
-    rollNumber: '12',
-    gender: 'Male',
-    dob: '2011-04-12',
-    mobileNumber: '+91 99887 76655',
-    parentName: 'Ramesh Makwana',
-    parentContact: '+91 99887 76650',
-    address: 'Plot 45, Near Temple',
-    village: 'Dholera',
-    taluka: 'Dholera',
-    district: 'Ahmedabad',
-    schoolCode: 'S101',
-    standard: '9th',
-    stream: 'None',
-    enrollmentDate: '2025-06-15',
-    attendancePercentage: 88,
-    baselineScore: 42,
-    endlineScore: 78,
-    exams: [
-      { examName: 'Unit Test 1', score: 65, date: '2025-09-10' },
-      { examName: 'Midterm', score: 72, date: '2025-11-20' }
-    ],
-    certificates: ['Basic IT Literacy Cert', 'Udyam Entrepreneurship Badge'],
-    aspirations: 'Computer Operator / Cyber Cafe Owner',
-    suggestedCourses: ['Advanced Excel Training', 'Web Development Basics'],
-    postStatus: 'Higher Education',
-    alumniStatus: 'Active',
-    governmentSchemeParticipation: ['MYSY Scholarship Scheme']
-  },
-  {
-    studentId: 'STU002',
-    name: 'Priyanka Rathod',
-    rollNumber: '34',
-    gender: 'Female',
-    dob: '2010-08-25',
-    mobileNumber: '+91 98989 12345',
-    parentName: 'Balvantsinh Rathod',
-    parentContact: '+91 98989 12340',
-    address: 'Opposite Milk Dairy Coop',
-    village: 'Limdi',
-    taluka: 'Surendranagar',
-    district: 'Surendranagar',
-    schoolCode: 'S102',
-    standard: '10th',
-    stream: 'None',
-    enrollmentDate: '2025-06-15',
-    attendancePercentage: 92,
-    baselineScore: 50,
-    endlineScore: 82,
-    exams: [
-      { examName: 'Midterm', score: 78, date: '2025-11-20' }
-    ],
-    certificates: ['Pre-Vocational Crafting Cert'],
-    aspirations: 'Government Officer (GPSC) / Teacher',
-    suggestedCourses: ['Competitive Exam Prep', 'Spoken English Course'],
-    postStatus: 'Higher Education',
-    alumniStatus: 'Active',
-    governmentSchemeParticipation: []
-  },
-  {
-    studentId: 'STU003',
-    name: 'Suresh Vaghela',
-    rollNumber: '05',
-    gender: 'Male',
-    dob: '2009-11-03',
-    mobileNumber: '+91 97234 56789',
-    parentName: 'Manubhai Vaghela',
-    parentContact: '+91 97234 56780',
-    address: 'Vaghela Vas, Main Road',
-    village: 'Modasa',
-    taluka: 'Modasa',
-    district: 'Aravalli',
-    schoolCode: 'S103',
-    standard: '11th',
-    stream: 'Science',
-    enrollmentDate: '2024-06-12',
-    attendancePercentage: 74,
-    baselineScore: 35,
-    endlineScore: 60,
-    exams: [],
-    certificates: [],
-    aspirations: 'Solar Panel Technician',
-    suggestedCourses: ['Electrical Skills Module II'],
-    postStatus: 'Employment',
-    employmentDetails: 'Assistant at Sunshine Solar Agency, Modasa',
-    alumniStatus: 'Active',
-    governmentSchemeParticipation: ['Shramik Sahay Yojana']
-  },
-  {
-    studentId: 'STU004',
-    name: 'Apeksha Patel',
-    rollNumber: '01',
-    gender: 'Female',
-    dob: '2011-02-18',
-    mobileNumber: '+91 90123 45678',
-    parentName: 'Jitendrabhai Patel',
-    parentContact: '+91 90123 45670',
-    address: 'Patel Street, Ramji Mandir Chawk',
-    village: 'Dholera',
-    taluka: 'Dholera',
-    district: 'Ahmedabad',
-    schoolCode: 'S101',
-    standard: '9th',
-    stream: 'None',
-    enrollmentDate: '2025-06-15',
-    attendancePercentage: 96,
-    baselineScore: 68,
-    endlineScore: 94,
-    exams: [
-      { examName: 'Midterm', score: 92, date: '2025-11-20' }
-    ],
-    certificates: ['Leadership Excellence Badge', 'Udyam Pitch Winner'],
-    aspirations: 'Agri-Business Entrepreneur',
-    suggestedCourses: ['Organic Farming Business Model', 'Financial Literacy'],
-    postStatus: 'Self Employed',
-    employmentDetails: 'Running family dairy store online portal',
-    alumniStatus: 'Active',
-    governmentSchemeParticipation: ['Stand-Up India Startup Support']
-  },
-  {
-    studentId: 'STU005',
-    name: 'Meena Parmar',
-    rollNumber: '22',
-    gender: 'Female',
-    dob: '2012-07-30',
-    mobileNumber: '+91 76001 23456',
-    parentName: 'Kalidas Parmar',
-    parentContact: '+91 76001 23450',
-    address: 'Near Government Well',
-    village: 'Limdi',
-    taluka: 'Surendranagar',
-    district: 'Surendranagar',
-    schoolCode: 'S102',
-    standard: '9th',
-    stream: 'None',
-    enrollmentDate: '2025-06-15',
-    attendancePercentage: 45, // Critical Student
-    baselineScore: 28,
-    exams: [
-      { examName: 'Unit Test 1', score: 32, date: '2025-09-10' }
-    ],
-    certificates: [],
-    aspirations: 'Tailoring Shop Owner',
-    suggestedCourses: ['Fashion Design Basics'],
-    postStatus: 'Unemployed',
-    alumniStatus: 'Inactive',
-    governmentSchemeParticipation: []
-  }
-];
+const SEED_STUDENTS: Student[] = [];
 
-const SEED_SESSIONS: Session[] = [
-  {
-    id: 'SES201',
-    programme: 'Vocational',
-    schoolCode: 'S101',
-    date: new Date().toISOString().split('T')[0], // Today
-    time: '11:00 AM',
-    trainerUsername: 'trainer.rahul',
-    subject: 'Basic Electronic Components',
-    lessonPlanId: 'LP301',
-    status: 'Scheduled',
-    attendancePresent: [],
-    attendanceAbsent: []
-  },
-  {
-    id: 'SES202',
-    programme: 'Udyam',
-    schoolCode: 'S101',
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // Yesterday
-    time: '02:00 PM',
-    trainerUsername: 'trainer.rahul',
-    subject: 'Customer Identification & Feedback',
-    lessonPlanId: 'LP302',
-    status: 'Completed',
-    photoUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=600',
-    attendancePresent: ['STU001', 'STU004'],
-    attendanceAbsent: [],
-    remarks: 'Students engaged well in field survey simulation. Excellent results.',
-    locationCoords: { lat: 22.2534, lng: 72.1983 }
-  }
-];
+const SEED_SESSIONS: Session[] = [];
 
-const SEED_LESSON_PLANS: LessonPlan[] = [
-  {
-    id: 'LP301',
-    programme: 'Vocational',
-    subject: 'Electronics Hardware',
-    chapter: 'Chapter 2: Resistors and Capacitors',
-    learningObjectives: ['Identify resistor color code schemes', 'Understand capacitor storage properties', 'Perform multimeter check tests'],
-    activities: ['Interactive multimeter reading game', 'Breadboard resistor wiring lab'],
-    materialsRequired: ['Multimeter', 'Breadboard', 'Assorted resistors & capacitors', '9V battery'],
-    worksheets: ['Resistor Color Code Worksheet PDF', 'Component Matching Sheet'],
-    status: 'Planned'
-  },
-  {
-    id: 'LP302',
-    programme: 'Udyam',
-    subject: 'Entrepreneurial Mindset',
-    chapter: 'Chapter 4: Customer Validation',
-    learningObjectives: ['Draft 3 client feedback questions', 'Conduct mock interviews', 'Understand customer pain-points'],
-    activities: ['Role play: shopkeeper & rural customer', 'Survey design circle'],
-    materialsRequired: ['Survey Sheets', 'Pens', 'Activity Cards'],
-    worksheets: ['Field Pitch Report Template'],
-    status: 'Delivered'
-  },
-  {
-    id: 'LP303',
-    programme: 'Pre-Vocational',
-    subject: 'Woodworking & Mechanics',
-    chapter: 'Chapter 1: Hand Tools Safety',
-    learningObjectives: ['Safely lift/handle hammers and saws', 'List 5 safety wear protocols', 'Identify tool storage layout'],
-    activities: ['Tool sorting exercise', 'Live safety gear drill'],
-    materialsRequired: ['Wood Saw', 'Hammer', 'Goggles', 'Safety Gloves'],
-    worksheets: ['Tool Identification Match sheet'],
-    status: 'Pending'
-  }
-];
+const SEED_LESSON_PLANS: LessonPlan[] = [];
 
-const SEED_INVENTORY: InventoryItem[] = [
-  {
-    id: 'INV401',
-    name: 'Electronics Breadboard Kit',
-    type: 'Training Kit',
-    currentStock: 4, // Trigger alert (threshold 5)
-    minThreshold: 5,
-    unit: 'Boxes',
-    logs: [
-      { id: 'log1', date: '2026-06-10', type: 'Inward', quantity: 15, remarks: 'Direct purchase from Ahmedabad dealer' },
-      { id: 'log2', date: '2026-06-25', type: 'Outward', quantity: 11, program: 'Vocational', assignedTo: 'S101', remarks: 'Distributed for lab project' }
-    ]
-  },
-  {
-    id: 'INV402',
-    name: 'Udyam Pitch Boards',
-    type: 'Stationery',
-    currentStock: 30,
-    minThreshold: 10,
-    unit: 'Sheets',
-    logs: [
-      { id: 'log3', date: '2026-06-15', type: 'Inward', quantity: 40, remarks: 'Supplied to Dholera cluster' },
-      { id: 'log4', date: '2026-06-28', type: 'Outward', quantity: 10, program: 'Udyam', assignedTo: 'S102' }
-    ]
-  },
-  {
-    id: 'INV403',
-    name: 'Basic Multimeters (Digital)',
-    type: 'Equipment',
-    currentStock: 12,
-    minThreshold: 3,
-    unit: 'Units',
-    logs: [
-      { id: 'log5', date: '2026-05-20', type: 'Inward', quantity: 12 }
-    ]
-  }
-];
+const SEED_INVENTORY: InventoryItem[] = [];
 
-const SEED_TRANSPORT: TransportRoute[] = [
-  {
-    id: 'VEH501',
-    vehicleNumber: 'GJ-01-XX-9900',
-    driverName: 'Karsanbhai Rabari',
-    driverContact: '+91 99778 86633',
-    routeDetails: 'Ahmedabad HQ -> Dholera Cluster (S101) -> Limdi Cluster (S102)',
-    scheduleDays: ['Monday', 'Wednesday', 'Friday'],
-    fuelLogs: [
-      { date: '2026-06-24', liters: 40, cost: 3800, odometer: 12450 },
-      { date: '2026-06-27', liters: 35, cost: 3325, odometer: 12820 }
-    ]
-  },
-  {
-    id: 'VEH502',
-    vehicleNumber: 'GJ-13-ZZ-1234',
-    driverName: 'Sanjay Tadvi',
-    driverContact: '+91 99112 23344',
-    routeDetails: 'Surendranagar Hub -> Modasa Rural Cluster (S103)',
-    scheduleDays: ['Tuesday', 'Thursday', 'Saturday'],
-    fuelLogs: [
-      { date: '2026-06-25', liters: 50, cost: 4750, odometer: 42310 }
-    ]
-  }
-];
+const SEED_TRANSPORT: TransportRoute[] = [];
 
-const SEED_DRIVERS: DriverDetails[] = [
-  {
-    id: 'driver.karsan',
-    name: 'Karsanbhai Rabari',
-    mobileNumber: '+91 99778 86633',
-    address: 'Rabari Vas, Ahmedabad',
-    emergencyContact: '+91 99778 86600',
-    aadhaarUrl: 'Simulated Aadhaar uploaded',
-    licenceUrl: 'Simulated DL uploaded'
-  },
-  {
-    id: 'driver.sanjay',
-    name: 'Sanjay Tadvi',
-    mobileNumber: '+91 99112 23344',
-    address: 'Tadvi Faliya, Surendranagar',
-    emergencyContact: '+91 99112 23300',
-    aadhaarUrl: 'Simulated Aadhaar uploaded',
-    licenceUrl: 'Simulated DL uploaded'
-  }
-];
+const SEED_DRIVERS: DriverDetails[] = [];
 
-const SEED_VEHICLES: VehicleDetails[] = [
-  {
-    id: 'GJ-01-XX-9900',
-    vehicleNumber: 'GJ-01-XX-9900',
-    vehicleType: 'Permanent',
-    insuranceDetails: 'Insurance Valid (Exp: 2026-10-25)',
-    rcDetails: 'RC Registered & Active',
-    pucDetails: 'PUC Valid (Exp: 2026-12-15)',
-    serviceDueDate: '2026-09-15'
-  },
-  {
-    id: 'GJ-13-ZZ-1234',
-    vehicleNumber: 'GJ-13-ZZ-1234',
-    vehicleType: 'Permanent',
-    insuranceDetails: 'Insurance Valid (Exp: 2027-01-10)',
-    rcDetails: 'RC Active',
-    pucDetails: 'PUC Valid (Exp: 2026-08-30)',
-    serviceDueDate: '2026-08-10'
-  },
-  {
-    id: 'GJ-23-YY-7788',
-    vehicleNumber: 'GJ-23-YY-7788',
-    vehicleType: 'Rental',
-    insuranceDetails: 'Provided by Rental Vendor',
-    rcDetails: 'Rental RC Active',
-    pucDetails: 'PUC Valid (Exp: 2026-11-20)',
-    serviceDueDate: '2026-10-01',
-    vendorName: 'Gujarat Travels Agency',
-    vendorContact: '+91 99887 76655',
-    rentalAgreementDetails: 'Agreement #GTA-2026-04',
-    rentalCharges: 3500,
-    validityPeriod: '2026-12-31'
-  }
-];
+const SEED_VEHICLES: VehicleDetails[] = [];
 
-const SEED_DRIVER_ENTRIES: DriverDailyEntry[] = [
-  {
-    id: 'DE001',
-    driverUsername: 'driver.karsan',
-    driverName: 'Karsanbhai Rabari',
-    startOdometer: 12450,
-    endOdometer: 12620,
-    distance: 170,
-    petrolQuantity: 15,
-    fuelCost: 1425,
-    date: '2026-07-02',
-    vehicleId: 'GJ-01-XX-9900',
-    linkedTrainerUsername: 'trainer.rahul',
-    linkedTrainerName: 'Rahul Parmar',
-    vertical: 'Pre-Vocational'
-  }
-];
+const SEED_DRIVER_ENTRIES: DriverDailyEntry[] = [];
 
-const SEED_REIMBURSEMENTS: TrainerReimbursement[] = [
-  {
-    id: 'RE001',
-    trainerUsername: 'trainer.rahul',
-    trainerName: 'Rahul Parmar',
-    date: '2026-07-01',
-    startLocation: 'Valsad Office',
-    endLocation: 'Khanda Primary school',
-    distance: 45,
-    petrolQuantity: 4,
-    fuelCost: 380,
-    purpose: 'Deliver Pre-Vocational woodcraft kits',
-    vertical: 'Pre-Vocational',
-    status: 'Pending',
-    remarks: 'Bus strike in Valsad taluka, used personal bike.'
-  }
-];
+const SEED_REIMBURSEMENTS: TrainerReimbursement[] = [];
 
-const SEED_WEEKLY_SUBMISSIONS: WeeklySubmissionStatus[] = [
-  {
-    id: 'WS001',
-    username: 'trainer.rahul',
-    weekEndDate: '2026-07-05',
-    status: 'Pending',
-    type: 'trainer'
-  },
-  {
-    id: 'WS002',
-    username: 'driver.karsan',
-    weekEndDate: '2026-07-05',
-    status: 'Completed',
-    submittedAt: '2026-07-03T18:00:00Z',
-    type: 'driver'
-  }
-];
+const SEED_WEEKLY_SUBMISSIONS: WeeklySubmissionStatus[] = [];
 
-const SEED_ALERTS: SystemAlert[] = [
-  {
-    id: 'ALT001',
-    type: 'low_stock',
-    severity: 'high',
-    message: 'Electronics Breadboard Kit stock balance (4 Boxes) fell below critical threshold (5 Boxes).',
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-    isResolved: false
-  },
-  {
-    id: 'ALT002',
-    type: 'attendance_missing',
-    severity: 'medium',
-    message: 'Attendance submission for Dholera Rural High School (Udyam Session SES201) was not entered by 5 PM.',
-    schoolCode: 'S101',
-    programme: 'Udyam',
-    createdAt: new Date(Date.now() - 36000000).toISOString(),
-    isResolved: false
-  },
-  {
-    id: 'ALT003',
-    type: 'baseline_pending',
-    severity: 'low',
-    message: 'Baseline assessment scores are pending for 3 newly enrolled students in Standard 9th at Limdi Secondary Vidhyalaya.',
-    schoolCode: 'S102',
-    programme: 'Pre-Vocational',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    isResolved: false
-  }
-];
+const SEED_ALERTS: SystemAlert[] = [];
 
-const SEED_COUNSELLING: CounsellingRecord[] = [
-  {
-    id: 'CNS001',
-    studentId: 'STU001',
-    counsellorName: 'Dr. Priya Sharma',
-    sessionDate: '2026-06-20',
-    studentAspirations: 'Wants to launch a rural computer shop',
-    suggestedCourses: ['Basic Accounting', 'Hardware Repair Skills'],
-    parentCounsellingDetails: 'Father agreed to support Hitesh after school with workshop space.',
-    followUpStatus: 'Completed'
-  },
-  {
-    id: 'CNS002',
-    studentId: 'STU005',
-    counsellorName: 'Dr. Priya Sharma',
-    sessionDate: '2026-06-22',
-    studentAspirations: 'Struggling due to low attendance and family agricultural responsibilities.',
-    suggestedCourses: ['Vocational Tailoring Basics'],
-    parentCounsellingDetails: 'Spoke with mother to ensure Meena is released from farming duties on training days.',
-    followUpStatus: 'Pending',
-    nextFollowUpDate: '2026-07-05'
-  }
-];
+const SEED_COUNSELLING: CounsellingRecord[] = [];
 
-const SEED_MONITORING: MonitoringVisit[] = [
-  {
-    id: 'MON001',
-    schoolCode: 'S101',
-    visitDate: '2026-06-26',
-    fieldStaffName: 'Anil Rathod',
-    observations: 'Trainer was on time. Smartboard was not working so white board was used. Students were responsive.',
-    challenges: 'Power fluctuations disrupt digital lab sessions occasionally.',
-    actionItems: ['Coordinate with school administration to purchase battery backup.', 'Provide paper worksheets as backup.'],
-    rating: 4
-  }
-];
+const SEED_MONITORING: MonitoringVisit[] = [];
 
 const SEED_TIMETABLE: TimetableEntry[] = [
   // ==================== G.1 | Pre-Voc Schedule 2025-26 ====================
@@ -1012,10 +575,10 @@ class OmpDatabase {
     localStorage.setItem('omp_schools', JSON.stringify(mergedSchools));
 
     if (!localStorage.getItem('omp_students')) {
-      localStorage.setItem('omp_students', JSON.stringify(SEED_STUDENTS));
+      localStorage.setItem('omp_students', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_sessions')) {
-      localStorage.setItem('omp_sessions', JSON.stringify(SEED_SESSIONS));
+      localStorage.setItem('omp_sessions', JSON.stringify([]));
     } else {
       let currentSessions = JSON.parse(localStorage.getItem('omp_sessions')!);
       const originalLength = currentSessions.length;
@@ -1025,37 +588,37 @@ class OmpDatabase {
       }
     }
     if (!localStorage.getItem('omp_lesson_plans')) {
-      localStorage.setItem('omp_lesson_plans', JSON.stringify(SEED_LESSON_PLANS));
+      localStorage.setItem('omp_lesson_plans', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_inventory')) {
-      localStorage.setItem('omp_inventory', JSON.stringify(SEED_INVENTORY));
+      localStorage.setItem('omp_inventory', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_transport')) {
-      localStorage.setItem('omp_transport', JSON.stringify(SEED_TRANSPORT));
+      localStorage.setItem('omp_transport', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_alerts')) {
-      localStorage.setItem('omp_alerts', JSON.stringify(SEED_ALERTS));
+      localStorage.setItem('omp_alerts', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_counselling')) {
-      localStorage.setItem('omp_counselling', JSON.stringify(SEED_COUNSELLING));
+      localStorage.setItem('omp_counselling', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_monitoring')) {
-      localStorage.setItem('omp_monitoring', JSON.stringify(SEED_MONITORING));
+      localStorage.setItem('omp_monitoring', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_drivers')) {
-      localStorage.setItem('omp_drivers', JSON.stringify(SEED_DRIVERS));
+      localStorage.setItem('omp_drivers', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_vehicles')) {
-      localStorage.setItem('omp_vehicles', JSON.stringify(SEED_VEHICLES));
+      localStorage.setItem('omp_vehicles', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_driver_entries')) {
-      localStorage.setItem('omp_driver_entries', JSON.stringify(SEED_DRIVER_ENTRIES));
+      localStorage.setItem('omp_driver_entries', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_reimbursements')) {
-      localStorage.setItem('omp_reimbursements', JSON.stringify(SEED_REIMBURSEMENTS));
+      localStorage.setItem('omp_reimbursements', JSON.stringify([]));
     }
     if (!localStorage.getItem('omp_weekly_submissions')) {
-      localStorage.setItem('omp_weekly_submissions', JSON.stringify(SEED_WEEKLY_SUBMISSIONS));
+      localStorage.setItem('omp_weekly_submissions', JSON.stringify([]));
     }
     
     // Always force-overwrite timetable with the latest seed data (Pre-Voc Schedule 2025-26)
