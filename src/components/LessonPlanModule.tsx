@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
 import type { LessonPlan, ProgrammeName } from '../types';
 import { 
   Plus, BookOpen, Film, FileText, Upload, Compass, 
-  CheckCircle, ArrowUpRight, PlayCircle, Eye, Trash, RefreshCw 
+  CheckCircle, ArrowUpRight, PlayCircle, Eye, Trash, RefreshCw,
+  ExternalLink, FolderOpen, Sprout, Heart, ShoppingBag, ChevronDown, ChevronRight
 } from 'lucide-react';
 
 export const LessonPlanModule: React.FC = () => {
@@ -12,7 +13,13 @@ export const LessonPlanModule: React.FC = () => {
   
   // States
   const [plans, setPlans] = useState<LessonPlan[]>([]);
+  const selectedPlanRef = useRef<LessonPlan | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<LessonPlan | null>(null);
+
+  // Keep ref in sync so async callbacks always read the latest plan
+  useEffect(() => {
+    selectedPlanRef.current = selectedPlan;
+  }, [selectedPlan]);
   const [selectedProgFilter, setSelectedProgFilter] = useState<ProgrammeName | 'All'>('All');
   
   // Forms states
@@ -72,33 +79,41 @@ export const LessonPlanModule: React.FC = () => {
   // Mock doc upload
   const handleDocUploadSim = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0 || !selectedPlan) return;
+    if (!files || files.length === 0 || !selectedPlanRef.current) return;
     
     const file = files[0];
+    // Reset input so the same file can be re-selected later
+    e.target.value = '';
+
     if (!file.name.match(/\.(docx|doc|pdf)$/i)) {
       alert('Please upload Word (.docx/.doc) or PDF documents only.');
       return;
     }
 
+    // Capture the plan at upload-start via ref (always up-to-date)
+    const planAtUploadStart = selectedPlanRef.current;
+
     setIsUploadingDoc(true);
-    setUploadProgress(10);
+    setUploadProgress(0);
     
     // Simulate upload ticks
     const interval = setInterval(() => {
       setUploadProgress(prev => {
-        if (prev >= 100) {
+        const next = prev + 30;
+        if (next >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            setIsUploadingDoc(false);
-            
+            // Use the captured plan reference, not stale closure
             const updatedPlan: LessonPlan = {
-              ...selectedPlan,
-              worksheets: [...selectedPlan.worksheets, file.name]
+              ...planAtUploadStart,
+              worksheets: [...planAtUploadStart.worksheets, file.name]
             };
             
             db.saveLessonPlan(updatedPlan);
             setSelectedPlan(updatedPlan);
             loadPlans();
+            setUploadProgress(0);
+            setIsUploadingDoc(false);
             
             window.dispatchEvent(new CustomEvent('omp_toast_message', { 
               detail: `Word worksheet '${file.name}' attached successfully!` 
@@ -106,7 +121,7 @@ export const LessonPlanModule: React.FC = () => {
           }, 400);
           return 100;
         }
-        return prev + 30;
+        return next;
       });
     }, 200);
   };
@@ -184,6 +199,38 @@ export const LessonPlanModule: React.FC = () => {
     return selectedProgFilter === 'All' || p.programme === selectedProgFilter;
   });
 
+  // ── Pre-Vocational subject grouping ──────────────────────────────────────
+  const PV_SUBJECTS = [
+    { key: 'Agriculture',                   label: 'Agriculture',                    icon: Sprout,      color: 'emerald', driveUrl: 'https://drive.google.com/drive/folders/1Aq-J4ZqDMnVOtqMRe9iUIvSSnNnCDXqV' },
+    { key: 'Home and Health',               label: 'Home and Health',                icon: Heart,       color: 'rose',    driveUrl: 'https://drive.google.com/drive/folders/1l7Afb9WhO4_2U7SgOcp4YKNVsUfsQh2t' },
+    { key: 'Trade, Commerce and Technology',label: 'Trade, Commerce & Technology',  icon: ShoppingBag, color: 'blue',    driveUrl: 'https://drive.google.com/drive/folders/1dQm0fTgYPgUElAFxUzO6AoeKiwETgRle' },
+  ];
+  const [expandedSubject, setExpandedSubject] = useState<string | null>('Agriculture');
+  const pvPlans = plans.filter(p => p.programme === 'Pre-Vocational');
+
+  const pvBySubject = (subject: string) =>
+    pvPlans.filter(p => p.subject === subject).sort((a, b) => a.chapter.localeCompare(b.chapter));
+
+  // Colour helpers
+  const subjectColor = (color: string) => ({
+    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+    rose:    'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400',
+    blue:    'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400',
+  } as Record<string, string>)[color] || 'bg-primary/10 border-primary/20 text-primary';
+
+  const subjectHeaderColor = (color: string) => ({
+    emerald: 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
+    rose:    'from-rose-500/10 to-rose-500/5 border-rose-500/20',
+    blue:    'from-blue-500/10 to-blue-500/5 border-blue-500/20',
+  } as Record<string, string>)[color] || 'from-primary/10 to-primary/5 border-primary/20';
+
+  const subjectIconColor = (color: string) => ({
+    emerald: 'text-emerald-500',
+    rose:    'text-rose-500',
+    blue:    'text-blue-500',
+  } as Record<string, string>)[color] || 'text-primary';
+
+
   return (
     <div className="space-y-6">
       
@@ -193,9 +240,12 @@ export const LessonPlanModule: React.FC = () => {
           <h1 className="text-2xl font-extrabold tracking-tight font-heading">{t('lesson_plans')}</h1>
           <p className="text-sm text-slate-500 mt-1">Configure study syllabi, worksheets, and training videos</p>
         </div>
-        {hasPermission('Add Students') && ( // Scope check matching admin privileges
+        {hasPermission('Add Students') && (
           <button 
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setNewPlan(prev => ({ ...prev, programme: selectedProgFilter !== 'All' ? selectedProgFilter as ProgrammeName : 'Pre-Vocational' }));
+              setShowAddModal(true);
+            }}
             className="btn-primary"
           >
             <Plus size={18} />
@@ -230,47 +280,140 @@ export const LessonPlanModule: React.FC = () => {
             <Compass size={18} className="text-slate-400" />
           </div>
 
-          {/* Roster Cards list */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredPlans.map(plan => (
-              <div 
-                key={plan.id}
-                onClick={() => { setSelectedPlan(plan); setShowVideoInput(false); }}
-                className={`bg-white dark:bg-dark-surface p-5 border rounded-md shadow-sm cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-md ${
-                  selectedPlan?.id === plan.id 
-                    ? 'border-2 border-primary ring-2 ring-primary/10' 
-                    : 'border-slate-200 dark:border-dark-border'
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-mono text-slate-400">{plan.id}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold capitalize ${
-                    plan.status === 'Delivered'
-                      ? 'bg-green-500/10 text-green-500'
-                      : plan.status === 'Pending'
-                      ? 'bg-amber-500/10 text-accent font-bold'
-                      : 'bg-primary/10 text-primary'
-                  }`}>
-                    {plan.status}
-                  </span>
-                </div>
+          {/* ═══════ PRE-VOCATIONAL SUBJECT GROUPS ═══════ */}
+          {(selectedProgFilter === 'Pre-Vocational' || selectedProgFilter === 'All') && pvPlans.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <FolderOpen size={12} className="text-primary" />
+                Pre-Vocational Curriculum — Google Drive Library
+              </p>
 
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white mt-3 truncate">{plan.chapter}</h3>
-                
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[9px] bg-primary/10 border border-primary/20 text-primary font-bold px-1.5 py-0.5 rounded capitalize">
-                    {plan.programme}
-                  </span>
-                  <span className="text-[10px] text-slate-400 truncate w-32 font-medium">{plan.subject}</span>
-                </div>
+              {PV_SUBJECTS.map(subj => {
+                const Icon = subj.icon;
+                const subjectPlans = pvBySubject(subj.key);
+                const isExpanded = expandedSubject === subj.key;
 
-                <div className="flex gap-4 pt-3 border-t border-slate-100 dark:border-dark-border/40 mt-4 text-[10px] text-slate-500 font-semibold">
-                  <span className="flex items-center gap-1"><FileText size={12} className="text-primary" /> {plan.worksheets.length} Worksheets</span>
-                  <span className="flex items-center gap-1"><Film size={12} className="text-accent" /> {plan.videoUrl ? '1 Video' : 'No Video'}</span>
-                </div>
+                return (
+                  <div key={subj.key} className={`rounded-xl border bg-gradient-to-br ${subjectHeaderColor(subj.color)} overflow-hidden`}>
+                    {/* Subject header */}
+                    <div
+                      className="flex items-center justify-between p-3.5 cursor-pointer select-none"
+                      onClick={() => setExpandedSubject(isExpanded ? null : subj.key)}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${subjectColor(subj.color)} border`}>
+                          <Icon size={14} className={subjectIconColor(subj.color)} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-extrabold text-slate-900 dark:text-white">{subj.label}</p>
+                          <p className="text-[9px] text-slate-400 font-medium mt-0.5">{subjectPlans.length} grades • New Format, Gujarati</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={subj.driveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-white/70 dark:bg-dark-card/60 hover:bg-white dark:hover:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:text-primary transition-all"
+                        >
+                          <ExternalLink size={10} />
+                          Google Drive
+                        </a>
+                        {isExpanded ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
+                      </div>
+                    </div>
+
+                    {/* Grade cards */}
+                    {isExpanded && (
+                      <div className="border-t border-slate-200/60 dark:border-dark-border/40 p-3 grid grid-cols-3 gap-2">
+                        {subjectPlans.map(plan => (
+                          <div
+                            key={plan.id}
+                            onClick={() => { setSelectedPlan(plan); setShowVideoInput(false); }}
+                            className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+                              selectedPlan?.id === plan.id
+                                ? `border-2 ${subjectColor(subj.color).replace('bg-', 'border-').split(' ')[0]} ring-2 ring-primary/10 bg-white dark:bg-dark-card`
+                                : 'border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/50 hover:bg-white dark:hover:bg-dark-card'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start mb-1.5">
+                              <span className={`text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded ${subjectColor(subj.color)} border`}>
+                                {plan.chapter.match(/Grade \d+/)?.[0] || 'Grade'}
+                              </span>
+                              <span className={`w-2 h-2 rounded-full ${plan.status === 'Delivered' ? 'bg-green-500' : plan.status === 'Pending' ? 'bg-amber-500' : 'bg-slate-300'}`} title={plan.status} />
+                            </div>
+                            <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 leading-tight mt-1">
+                              {plan.worksheets.length} doc{plan.worksheets.length !== 1 ? 's' : ''}
+                            </p>
+                            <p className="text-[9px] text-slate-400 mt-0.5">{plan.status}</p>
+                          </div>
+                        ))}
+                        {subjectPlans.length === 0 && (
+                          <p className="col-span-3 text-xs text-slate-400 italic p-2">No plans found for this subject.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {(selectedProgFilter === 'Pre-Vocational') && (
+                <div className="border-b border-slate-200 dark:border-dark-border my-1" />
+              )}
+            </div>
+          )}
+
+          {/* Non-PV plans OR all plans when filter isn't PV */}
+          {filteredPlans.filter(p => p.programme !== 'Pre-Vocational' || selectedProgFilter !== 'Pre-Vocational').length > 0 && (
+            <>
+              {selectedProgFilter === 'All' && (
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Other Programmes</p>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredPlans
+                  .filter(p => selectedProgFilter !== 'Pre-Vocational' ? p.programme !== 'Pre-Vocational' : false)
+                  .map(plan => (
+                  <div 
+                    key={plan.id}
+                    onClick={() => { setSelectedPlan(plan); setShowVideoInput(false); }}
+                    className={`bg-white dark:bg-dark-surface p-5 border rounded-md shadow-sm cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-md ${
+                      selectedPlan?.id === plan.id 
+                        ? 'border-2 border-primary ring-2 ring-primary/10' 
+                        : 'border-slate-200 dark:border-dark-border'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="text-[10px] font-mono text-slate-400">{plan.id}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold capitalize ${
+                        plan.status === 'Delivered'
+                          ? 'bg-green-500/10 text-green-500'
+                          : plan.status === 'Pending'
+                          ? 'bg-amber-500/10 text-accent font-bold'
+                          : 'bg-primary/10 text-primary'
+                      }`}>
+                        {plan.status}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white mt-3 truncate">{plan.chapter}</h3>
+                    
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-[9px] bg-primary/10 border border-primary/20 text-primary font-bold px-1.5 py-0.5 rounded capitalize">
+                        {plan.programme}
+                      </span>
+                      <span className="text-[10px] text-slate-400 truncate w-32 font-medium">{plan.subject}</span>
+                    </div>
+
+                    <div className="flex gap-4 pt-3 border-t border-slate-100 dark:border-dark-border/40 mt-4 text-[10px] text-slate-500 font-semibold">
+                      <span className="flex items-center gap-1"><FileText size={12} className="text-primary" /> {plan.worksheets.length} Worksheets</span>
+                      <span className="flex items-center gap-1"><Film size={12} className="text-accent" /> {plan.videoUrl ? '1 Video' : 'No Video'}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
 
         </div>
 
@@ -330,13 +473,27 @@ export const LessonPlanModule: React.FC = () => {
                   {selectedPlan.worksheets.map((doc, idx) => (
                     <div key={idx} className="p-2.5 bg-slate-50 dark:bg-dark-card border border-slate-150 dark:border-dark-border rounded flex justify-between items-center text-xs text-slate-700 dark:text-slate-300">
                       <span className="font-semibold truncate w-44">{doc}</span>
-                      <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); alert(`Simulating file download of: '${doc}'`); }}
-                        className="text-primary font-bold hover:underline inline-flex items-center gap-0.5 text-[10px]"
-                      >
-                        Open <ArrowUpRight size={12} />
-                      </a>
+                      <div className="flex items-center gap-2">
+                        {/* If it's a PV seeded plan, show a real Google Drive link */}
+                        {(selectedPlan as any).driveFileId ? (
+                          <a
+                            href={`https://drive.google.com/drive/folders/${(selectedPlan as any).driveFileId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary font-bold hover:underline inline-flex items-center gap-0.5 text-[10px]"
+                          >
+                            Drive <ExternalLink size={11} />
+                          </a>
+                        ) : (
+                          <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); alert(`Simulating file download of: '${doc}'`); }}
+                            className="text-primary font-bold hover:underline inline-flex items-center gap-0.5 text-[10px]"
+                          >
+                            Open <ArrowUpRight size={12} />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   ))}
                   {selectedPlan.worksheets.length === 0 && (

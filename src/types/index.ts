@@ -24,7 +24,8 @@ export type SessionStatus =
   | 'Completed'
   | 'Cancelled'
   | 'Missed'
-  | 'Postponed';
+  | 'Postponed'
+  | 'Teacher Absent';
 
 export interface User {
   username: string;
@@ -131,6 +132,11 @@ export interface Session {
   studentsPresentCount?: number;
   issuesFaced?: string;
   groupName?: string;
+
+  // Substitute & Absence Tracking
+  substitutedBy?: string;       // username of substitute trainer
+  substitutedByName?: string;   // display name of substitute trainer
+  teacherAbsentReason?: string; // reason the assigned teacher couldn't attend
 }
 
 export interface TimetableEntry {
@@ -298,3 +304,20 @@ export interface WeeklySubmissionStatus {
   submittedAt?: string;
   type: 'trainer' | 'driver';
 }
+
+// Dashboard Customisation
+export interface DashboardWidgetConfig {
+  id: string;
+  visible: boolean;
+  order: number;
+}
+
+export interface DashboardLayout {
+  /** Composite key: `{username}_{dashboardKey}` e.g. "admin_super_dashboard" */
+  id: string;
+  username: string;
+  dashboardKey: string; // "super_dashboard" | "personal_dashboard"
+  widgets: DashboardWidgetConfig[];
+  updatedAt: string;
+}
+

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
-import type { Session, School, Student, ProgrammeName, SessionStatus, SystemAlert } from '../types';
-import { Calendar, Play, CheckCircle, XCircle, MapPin, Camera, AlertCircle, RefreshCw, UploadCloud, Trash, X } from 'lucide-react';
+import type { Session, School, Student, ProgrammeName, SessionStatus, SystemAlert, User } from '../types';
+import { Calendar, Play, CheckCircle, XCircle, MapPin, Camera, AlertCircle, RefreshCw, UploadCloud, Trash, X, UserX, Users } from 'lucide-react';
 
 interface SessionModuleProps {
   selectedSessionId: string | null;
@@ -20,6 +20,8 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
   // Selection filters
   const [selectedSchoolFilter, setSelectedSchoolFilter] = useState('All');
   const [selectedProgFilter, setSelectedProgFilter] = useState<ProgrammeName | 'All'>('All');
+  const [selectedTrainerFilter, setSelectedTrainerFilter] = useState('All');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<SessionStatus | 'All'>('All');
   
   // Session confirmation states (the 3-tap state)
   const [confirmStatus, setConfirmStatus] = useState<SessionStatus>('Completed'); // Tap 1
@@ -30,6 +32,10 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
   const [isCapturingGps, setIsCapturingGps] = useState(false);
   const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
   const [selectedLessonPlanId, setSelectedLessonPlanId] = useState('');
+  // Substitute & Absence states
+  const [substituteUsername, setSubstituteUsername] = useState('');
+  const [teacherAbsentReason, setTeacherAbsentReason] = useState('');
+  const [allTrainers, setAllTrainers] = useState<User[]>([]);
 
   useEffect(() => {
     loadSessions();
@@ -60,6 +66,8 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
 
     setSessions(rawSessions);
     setSchools(rawSchools);
+    // Load trainers for substitute dropdown
+    setAllTrainers(db.getUsers().filter(u => u.role === 'trainer' && u.isActive));
 
     // If a session ID was selected from another component (like dashboard quick-start)
     if (selectedSessionId) {
@@ -77,6 +85,8 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
     setPhotoBlob(null);
     setGpsCoords(null);
     setSelectedLessonPlanId(session.lessonPlanId || '');
+    setSubstituteUsername('');
+    setTeacherAbsentReason('');
     
     // Default all students at this school to "Present" for 1-tap convenience
     const schoolStudents = db.getStudents().filter(s => s.schoolCode === session.schoolCode);
@@ -174,18 +184,34 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
       .map(s => s.studentId)
       .filter(id => !presentStudentIds.includes(id));
 
+    // Resolve substitute trainer info if applicable
+    const substitutedByUser = substituteUsername
+      ? allTrainers.find(t => t.username === substituteUsername)
+      : null;
+
     const updatedSession: Session = {
       ...activeSession,
       status: confirmStatus,
-      attendancePresent: presentStudentIds,
-      attendanceAbsent: absentStudentIds,
+      attendancePresent: (confirmStatus === 'Completed' || confirmStatus === 'Substitute') ? presentStudentIds : [],
+      attendanceAbsent: (confirmStatus === 'Completed' || confirmStatus === 'Substitute') ? absentStudentIds : [],
       remarks,
       photoUrl: photoBlob || undefined,
       locationCoords: gpsCoords || undefined,
-      conductedBy: activeSession.conductedBy || (confirmStatus === 'Completed' || confirmStatus === 'Conducted' ? currentUser?.name : undefined),
-      conductedAt: activeSession.conductedAt || (confirmStatus === 'Completed' || confirmStatus === 'Conducted' ? new Date().toISOString() : undefined),
-      studentsPresentCount: presentStudentIds.length,
-      lessonPlanId: selectedLessonPlanId
+      conductedBy: confirmStatus === 'Completed'
+        ? (activeSession.conductedBy || currentUser?.name)
+        : confirmStatus === 'Substitute'
+        ? substitutedByUser?.name
+        : undefined,
+      conductedAt: (confirmStatus === 'Completed' || confirmStatus === 'Substitute')
+        ? (activeSession.conductedAt || new Date().toISOString())
+        : undefined,
+      studentsPresentCount: (confirmStatus === 'Completed' || confirmStatus === 'Substitute') ? presentStudentIds.length : 0,
+      lessonPlanId: selectedLessonPlanId,
+      // Substitute fields
+      substitutedBy: confirmStatus === 'Substitute' ? substituteUsername : undefined,
+      substitutedByName: confirmStatus === 'Substitute' ? substitutedByUser?.name : undefined,
+      // Absence fields
+      teacherAbsentReason: confirmStatus === 'Teacher Absent' ? teacherAbsentReason : undefined,
     };
 
     const previous = JSON.stringify(activeSession);
@@ -207,6 +233,37 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
         type: 'class_conducted',
         severity: 'high',
         message: `Alert: Class conducted by ${currentUser?.name || updatedSession.trainerUsername} at School ${updatedSession.schoolCode}. Remarks: "${remarks || 'None'}"`,
+        programme: updatedSession.programme,
+        schoolCode: updatedSession.schoolCode,
+        createdAt: new Date().toISOString(),
+        isResolved: false
+      };
+      db.addAlert(notification);
+    }
+
+    // Alert for substitute teacher scenario
+    if (confirmStatus === 'Substitute') {
+      const subName = allTrainers.find(t => t.username === substituteUsername)?.name || substituteUsername;
+      const notification: SystemAlert = {
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'class_conducted',
+        severity: 'medium',
+        message: `Substitute Class: ${subName} covered for ${updatedSession.trainerUsername} at School ${updatedSession.schoolCode}. Remarks: "${remarks || 'None'}"`,
+        programme: updatedSession.programme,
+        schoolCode: updatedSession.schoolCode,
+        createdAt: new Date().toISOString(),
+        isResolved: false
+      };
+      db.addAlert(notification);
+    }
+
+    // Alert for teacher absence (class NOT conducted)
+    if (confirmStatus === 'Teacher Absent') {
+      const notification: SystemAlert = {
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'class_missed',
+        severity: 'high',
+        message: `Teacher Absent: ${currentUser?.name || updatedSession.trainerUsername} could not attend class at School ${updatedSession.schoolCode}. Reason: "${teacherAbsentReason || 'Not specified'}"`,
         programme: updatedSession.programme,
         schoolCode: updatedSession.schoolCode,
         createdAt: new Date().toISOString(),
@@ -260,7 +317,9 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
   const filteredSessions = sessions.filter(session => {
     const matchesSchool = selectedSchoolFilter === 'All' || session.schoolCode === selectedSchoolFilter;
     const matchesProg = selectedProgFilter === 'All' || session.programme === selectedProgFilter;
-    return matchesSchool && matchesProg;
+    const matchesTrainer = selectedTrainerFilter === 'All' || session.trainerUsername === selectedTrainerFilter;
+    const matchesStatus = selectedStatusFilter === 'All' || session.status === selectedStatusFilter;
+    return matchesSchool && matchesProg && matchesTrainer && matchesStatus;
   });
 
   return (
@@ -314,7 +373,7 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                     1. Select Status
                   </span>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5">
                     <button
                       type="button"
                       onClick={() => setConfirmStatus('Completed')}
@@ -330,15 +389,28 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                     
                     <button
                       type="button"
-                      onClick={() => setConfirmStatus('Missed')}
+                      onClick={() => { setConfirmStatus('Substitute'); setSubstituteUsername(''); }}
                       className={`py-2 rounded font-bold text-[10px] flex flex-col items-center gap-1 border transition-all ${
-                        confirmStatus === 'Missed'
+                        confirmStatus === 'Substitute'
+                          ? 'bg-indigo-500/10 border-indigo-500 text-indigo-500 scale-102 ring-2 ring-indigo-500/20'
+                          : 'bg-slate-50 dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-500'
+                      }`}
+                    >
+                      <Users size={14} />
+                      Substitute
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { setConfirmStatus('Teacher Absent'); setTeacherAbsentReason(''); }}
+                      className={`py-2 rounded font-bold text-[10px] flex flex-col items-center gap-1 border transition-all ${
+                        confirmStatus === 'Teacher Absent'
                           ? 'bg-red-500/10 border-red-500 text-red-500 scale-102 ring-2 ring-red-500/20'
                           : 'bg-slate-50 dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-500'
                       }`}
                     >
-                      <XCircle size={14} />
-                      Missed
+                      <UserX size={14} />
+                      Teacher Absent
                     </button>
 
                     <button
@@ -354,10 +426,66 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                       Postpone
                     </button>
                   </div>
+
+                  {/* Substitute Teacher Extra Fields */}
+                  {confirmStatus === 'Substitute' && (
+                    <div className="mt-3 space-y-2 p-2.5 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-md">
+                      <span className="block text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Substitute Teacher Details</span>
+                      <div>
+                        <label className="block text-[9px] font-semibold text-slate-500 mb-1">Who covered the class? *</label>
+                        <select
+                          required
+                          value={substituteUsername}
+                          onChange={(e) => setSubstituteUsername(e.target.value)}
+                          className="w-full px-2 py-1.5 bg-white dark:bg-dark-card border border-indigo-300 dark:border-indigo-700 rounded text-[11px] outline-none focus:ring-1 focus:ring-indigo-500 text-slate-900 dark:text-white font-semibold"
+                        >
+                          <option value="">-- Select Substitute Trainer --</option>
+                          {allTrainers
+                            .filter(t => t.username !== activeSession?.trainerUsername)
+                            .map(t => (
+                              <option key={t.username} value={t.username}>{t.name}</option>
+                            ))
+                          }
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-semibold text-slate-500 mb-1">Reason / Notes (optional)</label>
+                        <textarea
+                          rows={2}
+                          value={remarks}
+                          onChange={(e) => setRemarks(e.target.value)}
+                          placeholder="Why did the substitute cover? Any notes..."
+                          className="w-full px-2 py-1.5 bg-white dark:bg-dark-card border border-indigo-300 dark:border-indigo-700 rounded text-[11px] outline-none focus:ring-1 focus:ring-indigo-500 text-slate-900 dark:text-white font-semibold"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Teacher Absent Extra Fields */}
+                  {confirmStatus === 'Teacher Absent' && (
+                    <div className="mt-3 space-y-2 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md">
+                      <span className="block text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Absence Details</span>
+                      <div>
+                        <label className="block text-[9px] font-semibold text-slate-500 mb-1">Reason for absence *</label>
+                        <textarea
+                          required
+                          rows={2}
+                          value={teacherAbsentReason}
+                          onChange={(e) => setTeacherAbsentReason(e.target.value)}
+                          placeholder="e.g. Medical emergency, family issue, transport problem..."
+                          className="w-full px-2 py-1.5 bg-white dark:bg-dark-card border border-red-300 dark:border-red-700 rounded text-[11px] outline-none focus:ring-1 focus:ring-red-500 text-slate-900 dark:text-white font-semibold"
+                        />
+                      </div>
+                      <p className="text-[9px] text-red-500 font-semibold flex items-center gap-1">
+                        <AlertCircle size={10} />
+                        Class was NOT conducted. An alert will be sent to the admin.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* TAP 2: Quick Student Attendance Checkbox Matrix */}
-                {confirmStatus === 'Completed' && (
+                {/* TAP 2: Quick Student Attendance - shown for Completed AND Substitute */}
+                {(confirmStatus === 'Completed' || confirmStatus === 'Substitute') && (
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="block font-bold text-slate-400 uppercase tracking-wider">
@@ -405,8 +533,8 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                   </div>
                 )}
 
-                {/* Media uploads and remarks */}
-                {confirmStatus === 'Completed' && (
+                {/* Media uploads and remarks - shown for Completed AND Substitute */}
+                {(confirmStatus === 'Completed' || confirmStatus === 'Substitute') && (
                   <div className="space-y-3.5">
                     {/* Camera photo input */}
                     <div>
@@ -530,8 +658,8 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
         <div className="space-y-4">
           
           {/* Header Directory Filters */}
-          <div className="bg-white dark:bg-dark-surface p-4 border border-slate-200 dark:border-dark-border rounded-md shadow-sm flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative">
+          <div className="bg-white dark:bg-dark-surface p-4 border border-slate-200 dark:border-dark-border rounded-md shadow-sm flex flex-col sm:flex-row gap-3 flex-wrap">
+            <div className="flex-1 min-w-[150px]">
               <select
                 value={selectedSchoolFilter}
                 onChange={(e) => setSelectedSchoolFilter(e.target.value)}
@@ -544,17 +672,49 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
               </select>
             </div>
             
-            <div className="w-full sm:w-60 relative">
+            {currentUser?.role !== 'trainer' && (
+              <div className="flex-1 min-w-[150px]">
+                <select
+                  value={selectedProgFilter}
+                  onChange={(e) => setSelectedProgFilter(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md text-xs font-semibold outline-none"
+                >
+                  <option value="All">All Programmes</option>
+                  <option value="Vocational">Vocational</option>
+                  <option value="Pre-Vocational">Pre-Vocational</option>
+                  <option value="Udyam">Udyam</option>
+                  <option value="Magic Touch">Magic Touch</option>
+                </select>
+              </div>
+            )}
+
+            {currentUser?.role !== 'trainer' && (
+              <div className="flex-1 min-w-[150px]">
+                <select
+                  value={selectedTrainerFilter}
+                  onChange={(e) => setSelectedTrainerFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md text-xs font-semibold outline-none"
+                >
+                  <option value="All">All Trainers</option>
+                  {allTrainers.map(t => (
+                    <option key={t.username} value={t.username}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex-1 min-w-[150px]">
               <select
-                value={selectedProgFilter}
-                onChange={(e) => setSelectedProgFilter(e.target.value as any)}
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value as any)}
                 className="w-full px-3 py-2 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md text-xs font-semibold outline-none"
               >
-                <option value="All">All Programmes</option>
-                <option value="Vocational">Vocational</option>
-                <option value="Pre-Vocational">Pre-Vocational</option>
-                <option value="Udyam">Udyam</option>
-                <option value="Magic Touch">Magic Touch</option>
+                <option value="All">All Statuses</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Completed">Completed</option>
+                <option value="Substitute">Substitute</option>
+                <option value="Teacher Absent">Teacher Absent</option>
+                <option value="Postponed">Postponed</option>
               </select>
             </div>
           </div>
@@ -574,8 +734,10 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                     className={`bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-4 rounded-md shadow-sm relative flex flex-col justify-between h-auto min-h-[176px] ${
                       session.status === 'Completed' 
                         ? 'border-l-4 border-l-secondary' 
-                        : session.status === 'Missed'
+                        : session.status === 'Missed' || session.status === 'Teacher Absent'
                         ? 'border-l-4 border-l-red-500'
+                        : session.status === 'Substitute'
+                        ? 'border-l-4 border-l-indigo-500'
                         : 'border-l-4 border-l-primary'
                     }`}
                   >
@@ -587,6 +749,10 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                             ? 'bg-secondary/10 text-secondary'
                             : session.status === 'Missed'
                             ? 'bg-red-500/10 text-red-500'
+                            : session.status === 'Teacher Absent'
+                            ? 'bg-red-500/10 text-red-600'
+                            : session.status === 'Substitute'
+                            ? 'bg-indigo-500/10 text-indigo-600'
                             : session.status === 'Scheduled'
                             ? 'bg-primary/10 text-primary animate-pulse'
                             : 'bg-accent/10 text-accent'
@@ -621,8 +787,41 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                           {session.conductedBy && (
                             <span className="block">Conducted By: <span className="text-slate-900 dark:text-white font-bold">{session.conductedBy}</span></span>
                           )}
+                          {session.substitutedByName && (
+                            <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
+                              <Users size={10} />
+                              Sub for: <span className="font-bold">{session.substitutedByName}</span>
+                            </span>
+                          )}
                           {session.remarks && (
                             <span className="block italic text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border p-1.5 rounded">Remarks: "{session.remarks}"</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Substitute badge */}
+                      {session.status === 'Substitute' && (
+                        <div className="mt-3 p-2 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded text-[10px] space-y-0.5">
+                          <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
+                            <Users size={10} /> Substitute Class
+                          </span>
+                          {session.substitutedByName && (
+                            <span className="block text-slate-700 dark:text-slate-300">Covered by: <span className="font-bold">{session.substitutedByName}</span></span>
+                          )}
+                          {session.remarks && (
+                            <span className="block italic text-slate-500">"{session.remarks}"</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Teacher Absent badge */}
+                      {session.status === 'Teacher Absent' && (
+                        <div className="mt-3 p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded text-[10px] space-y-0.5">
+                          <span className="flex items-center gap-1 font-bold text-red-600">
+                            <UserX size={10} /> Teacher Absent — Class Not Conducted
+                          </span>
+                          {session.teacherAbsentReason && (
+                            <span className="block italic text-slate-500">Reason: "{session.teacherAbsentReason}"</span>
                           )}
                         </div>
                       )}
@@ -632,7 +831,7 @@ export const SessionModule: React.FC<SessionModuleProps> = ({ selectedSessionId,
                       <span className="text-[10px] text-slate-400 font-mono">
                         {session.date} ({session.time})
                       </span>
-                      {session.status === 'Scheduled' && (currentUser?.role === 'trainer' || currentUser?.role === 'super_admin') && (
+                      {session.status === 'Scheduled' && currentUser?.role === 'trainer' && (
                         <button
                           onClick={() => handleStartSessionConfirm(session)}
                           className="px-3 py-1.5 bg-primary text-white rounded text-[10px] font-bold hover:bg-primary-dark transition-all inline-flex items-center gap-1 shadow shadow-primary/20"
