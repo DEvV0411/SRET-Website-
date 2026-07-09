@@ -25,7 +25,8 @@ export type SessionStatus =
   | 'Cancelled'
   | 'Missed'
   | 'Postponed'
-  | 'Teacher Absent';
+  | 'Teacher Absent'
+  | 'Substitute';
 
 export interface User {
   username: string;

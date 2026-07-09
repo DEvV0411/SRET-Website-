@@ -303,7 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleNetwork = () => {
     const nextState = !isOnline;
-    db.setNetworkOnline(nextState);
+    setIsOnline(nextState);
   };
 
   const setLanguage = (lang: 'en' | 'gu') => {
