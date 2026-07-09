@@ -15,6 +15,8 @@ import { DashboardCustomiser } from './DashboardCustomiser';
 
 const PERSONAL_WIDGET_DEFS = [
   { id: 'profile_card',      label: 'My Profile Card',         description: 'Role, districts, and status' },
+  { id: 'my_timetable',      label: 'My Timetable',            description: 'Your assigned classes for the week' },
+  { id: 'my_sessions',       label: 'My Recent Sessions',      description: 'Recently conducted classes' },
   { id: 'weekly_submission', label: 'Weekly Submission Status', description: 'Current week compliance check' },
   { id: 'my_tasks',          label: 'My Action Tasks',         description: 'Pending to-do items for your role' },
   { id: 'performance',       label: 'Performance & Attendance', description: 'Compliance index and attendance rate' },
@@ -32,6 +34,8 @@ export const PersonalDashboard: React.FC = () => {
   const [reimbursements, setReimbursements] = useState<TrainerReimbursement[]>([]);
   const [driverEntries, setDriverEntries] = useState<DriverDailyEntry[]>([]);
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
+  const [myTimetable, setMyTimetable] = useState<any[]>([]);
+  const [mySessions, setMySessions] = useState<any[]>([]);
 
   // Dashboard layout customisation (DB-backed, per user)
   const layout = useDashboardLayout(
@@ -64,6 +68,14 @@ export const PersonalDashboard: React.FC = () => {
     setAlerts(allAlerts.filter(a =>
       currentUser.assignedProgramme === 'All' || a.programme === currentUser.assignedProgramme
     ));
+
+    const allTimetable = db.getTimetable();
+    setMyTimetable(allTimetable.filter(t => 
+      currentUser.name.toLowerCase().includes(t.teacherName.toLowerCase())
+    ));
+
+    const allSessions = db.getSessions();
+    setMySessions(allSessions.filter(s => s.trainerUsername === currentUser.username).reverse().slice(0, 5));
   };
 
   if (!currentUser) return null;
@@ -154,6 +166,58 @@ export const PersonalDashboard: React.FC = () => {
             <span>Weekly logs are due by Sunday midnight. Please log all transport KM readings and fuel expenditures.</span>
           </div>
         )}
+      </div>
+    ),
+    my_timetable: (
+      <div key="my_timetable" className="bg-white dark:bg-dark-surface p-5 border border-slate-200 dark:border-dark-border rounded-lg shadow-sm space-y-4">
+        <h3 className="text-xs font-extrabold uppercase text-slate-500 flex items-center gap-1.5">
+          <Calendar size={16} className="text-slate-400" />
+          <span>My Timetable</span>
+        </h3>
+        <div className="space-y-3">
+          {myTimetable.map((t, idx) => (
+            <div key={idx} className="flex flex-col border border-slate-100 dark:border-dark-border/60 rounded-md p-3 bg-slate-50 dark:bg-dark-card/20">
+              <span className="text-sm font-bold text-slate-900 dark:text-white">{t.schoolName}</span>
+              <div className="flex justify-between items-center mt-1 text-[11px] text-slate-500 font-medium">
+                <span>{t.dayOfWeek} at {t.timeSlot}</span>
+                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded uppercase tracking-wider text-[9px] font-bold">
+                  {t.standard} Std
+                </span>
+              </div>
+            </div>
+          ))}
+          {myTimetable.length === 0 && (
+            <p className="text-xs text-slate-400 italic">No assigned classes found.</p>
+          )}
+        </div>
+      </div>
+    ),
+    my_sessions: (
+      <div key="my_sessions" className="bg-white dark:bg-dark-surface p-5 border border-slate-200 dark:border-dark-border rounded-lg shadow-sm space-y-4">
+        <h3 className="text-xs font-extrabold uppercase text-slate-500 flex items-center gap-1.5">
+          <CheckSquare size={16} className="text-slate-400" />
+          <span>My Recent Sessions (Attendance logs)</span>
+        </h3>
+        <div className="space-y-3">
+          {mySessions.map((s, idx) => (
+            <div key={idx} className="flex flex-col border border-slate-100 dark:border-dark-border/60 rounded-md p-3 bg-slate-50 dark:bg-dark-card/20">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-bold text-slate-900 dark:text-white">{s.schoolCode} ({s.date})</span>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                  s.status === 'Scheduled' ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'
+                }`}>
+                  {s.status}
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-500 font-medium mt-1">
+                {s.status === 'Scheduled' ? 'Awaiting class confirmation and attendance' : `Attendance logged: ${s.attendancePresent.length} students`}
+              </div>
+            </div>
+          ))}
+          {mySessions.length === 0 && (
+            <p className="text-xs text-slate-400 italic">No recent sessions found.</p>
+          )}
+        </div>
       </div>
     ),
     my_tasks: (
